@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cassert>
-#include "../include/jeu.hpp"
+#include "jeu.hpp"
 
 using namespace std;
 

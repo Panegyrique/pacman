@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../include/pacmanwindow.hpp"
+#include "pacmanwindow.hpp"
 
 using namespace std;
 
