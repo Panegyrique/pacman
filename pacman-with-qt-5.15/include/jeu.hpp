@@ -28,6 +28,7 @@ class Jeu
     Case *terrain;
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
     int posPacmanX, posPacmanY;
+	int NbVie;
     std::list<Fantome> fantomes;
 
   public:
@@ -47,6 +48,10 @@ class Jeu
     // Retourne la position du Pacman
     int getPacmanX() const;
     int getPacmanY() const;
+	
+	// Retourne et modifie le nombre de vie
+	int getNbVie() const;
+	void setNbVie(int);
 
     // Retourne la case à une position donnée
     Case getCase(int, int) const;

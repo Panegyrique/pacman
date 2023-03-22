@@ -9,7 +9,7 @@ class PacmanWindow : public QFrame
 {
   protected:
     Jeu jeu;
-    QPixmap pixmapPacman, pixmapFantome, pixmapMur;
+    QPixmap pixmapPacman, pixmapFantome, pixmapMur, pixmapVie;
 
   public:
     PacmanWindow(QWidget *pParent=0, Qt::WindowFlags flags=Qt::WindowFlags());

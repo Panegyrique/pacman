@@ -7,6 +7,7 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 {
     // Taille des cases en pixels
     int largeurCase, hauteurCase;
+	int decalage = 50;
 
     if (pixmapPacman.load("./data/pacman.bmp")==false)
     {
@@ -25,6 +26,12 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
         cout<<"Impossible d'ouvrir mur.bmp"<<endl;
         exit(-1);
     }
+	
+	if (pixmapVie.load("./data/lifes.png")==false)
+    {
+        cout<<"Impossible d'ouvrir lifes.png"<<endl;
+        exit(-1);
+    }
 
     jeu.init();
 
@@ -35,15 +42,31 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     largeurCase = pixmapMur.width();
     hauteurCase = pixmapMur.height();
 
-    resize(jeu.getNbCasesX()*largeurCase, jeu.getNbCasesY()*hauteurCase);
+    resize(jeu.getNbCasesX()*largeurCase, decalage + jeu.getNbCasesY()*hauteurCase);
 	
+	QFontDatabase *MyFontDatabase = new QFontDatabase();
+	MyFontDatabase->addApplicationFont("./data/arcadepi.ttf");
+	QFont Arcade("arcadepix", 20, 1, true);
+	
+	QLabel *TagLife = new QLabel(this);
+    TagLife->setStyleSheet("background-color:black");
+    TagLife->setGeometry(10,8+jeu.getNbCasesY()*hauteurCase,140,40);
+    TagLife->setText("<font color='white'>LIFES<\font>");
+    TagLife->setFont(Arcade);
+	
+	/*
 	PacmanButton *btn = new PacmanButton(this);
 	connect(btn, &QPushButton::clicked, this, &PacmanWindow::clickMonBouton);
+	*/
 }
 
 void PacmanWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
+	
+	//Fond du jeu en noir
+    painter.fillRect(0, 0, 828, 828, Qt::black);
+    painter.beginNativePainting();
     
     int x, y;
 
@@ -67,6 +90,10 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 
 	// Dessine Pacman
 	painter.drawPixmap(jeu.getPacmanX()*largeurCase, jeu.getPacmanY()*hauteurCase, pixmapPacman);
+
+	// Dessine les vies
+    for(int i=0;i<jeu.getNbVie();i++)
+        painter.drawPixmap(155+i*35, 9+jeu.getNbCasesY()*hauteurCase , pixmapVie);
 }
 
 void PacmanWindow::keyPressEvent(QKeyEvent *event)
