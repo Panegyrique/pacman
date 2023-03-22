@@ -210,3 +210,15 @@ bool Jeu::deplacePacman(Direction dir)
     else
         return false;
 }
+
+// Collision entre Pacman et Fantôme
+bool Jeu::isCollision()
+{
+    list<Fantome>::iterator itFantome;
+
+    for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) {
+        if(getPacmanX() == itFantome->getPosX() && getPacmanY() == itFantome->getPosY()) 
+			return true;
+    }
+    return false;
+}
