@@ -25,6 +25,7 @@ Jeu::Jeu()
     terrain = nullptr;
     largeur = 0; hauteur = 0;
     posPacmanX = 0; posPacmanY = 0;
+	NbVie = 0;
 }
 
 Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes)
@@ -33,6 +34,7 @@ Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes)
     hauteur = jeu.hauteur;
     posPacmanX = jeu.posPacmanX;
     posPacmanY = jeu.posPacmanY;
+	NbVie = jeu.NbVie;
     
     if (jeu.terrain!=nullptr)
     {
@@ -59,6 +61,7 @@ Jeu &Jeu::operator=(const Jeu &jeu)
     hauteur = jeu.hauteur;
     posPacmanX = jeu.posPacmanX;
     posPacmanY = jeu.posPacmanY;
+	NbVie = jeu.NbVie;
     fantomes = jeu.fantomes;
 
     if (jeu.terrain!=nullptr)
@@ -97,6 +100,7 @@ bool Jeu::init()
 
 	largeur = 20;
 	hauteur = 15;
+	NbVie = 3;
 
 	terrain = new Case[largeur*hauteur];
 
@@ -134,26 +138,33 @@ bool Jeu::init()
 
 void Jeu::evolue()
 {
-    int testX, testY;
-	list<Fantome>::iterator itFantome;
+	if(getNbVie() > 0){
+		int testX, testY;
+		list<Fantome>::iterator itFantome;
 
-    int depX[] = {-1, 1, 0, 0};
-    int depY[] = {0, 0, -1, 1};
+		int depX[] = {-1, 1, 0, 0};
+		int depY[] = {0, 0, -1, 1};
 
-    for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
-    {
-        testX = itFantome->posX + depX[itFantome->dir];
-        testY = itFantome->posY + depY[itFantome->dir];
+		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
+		{
+			testX = itFantome->posX + depX[itFantome->dir];
+			testY = itFantome->posY + depY[itFantome->dir];
 
-        if (terrain[testY*largeur+testX]==VIDE)
-        {
-            itFantome->posX = testX;
-            itFantome->posY = testY;
-        }
-        else
-            // Changement de direction
-            itFantome->dir = (Direction)(rand()%4);
-    }
+			if (terrain[testY*largeur+testX]==VIDE)
+			{
+				itFantome->posX = testX;
+				itFantome->posY = testY;
+			}
+			else
+				// Changement de direction
+				itFantome->dir = (Direction)(rand()%4);
+		}
+		if(isCollision())
+			setNbVie(getNbVie() - 1);
+	}
+	else
+		exit(-1);
+	
 }
 
 int Jeu::getNbCasesX() const
@@ -174,6 +185,16 @@ int Jeu::getPacmanX() const
 int Jeu::getPacmanY() const
 {
     return posPacmanY;
+}
+
+int Jeu::getNbVie() const
+{
+    return NbVie;
+}
+
+void Jeu::setNbVie(int vie)
+{
+    NbVie=vie;
 }
 
 Case Jeu::getCase(int x, int y) const
