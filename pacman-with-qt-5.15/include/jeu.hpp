@@ -65,6 +65,8 @@ class Jeu
 
     // Déplace Pacman dans une direction (si la case à atteindre est valide)
     bool deplacePacman(Direction);
+	
+	bool isCollision();
 };
 
 #endif
