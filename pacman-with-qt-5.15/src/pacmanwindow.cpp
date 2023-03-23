@@ -50,6 +50,12 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
         cout<<"Impossible d'ouvrir lifes.png"<<endl;
         exit(-1);
     }
+	
+	if (pixmapCerise.load("./data/cerise.png")==false)
+    {
+        cout<<"Impossible d'ouvrir cerise.png"<<endl;
+        exit(-1);
+    }
 
     jeu.init();
 
@@ -84,6 +90,10 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
     printScore->setFont(Arcade);
+	
+	QLabel *Cerise = new QLabel(this);
+	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-40,8+jeu.getNbCasesY()*hauteurCase,32,32);
+	Cerise->setPixmap(pixmapCerise);
 	
 	/*
 	PacmanButton *btn = new PacmanButton(this);

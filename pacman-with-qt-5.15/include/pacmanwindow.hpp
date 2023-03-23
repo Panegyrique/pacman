@@ -9,7 +9,7 @@ class PacmanWindow : public QFrame
 {
   protected:
     Jeu jeu;
-    QPixmap pixmapPacman, pixmapFantome, pixmapFantomePeur, pixmapDot, pixmapEnergizer, pixmapMur, pixmapVie;
+    QPixmap pixmapPacman, pixmapFantome, pixmapFantomePeur, pixmapDot, pixmapEnergizer, pixmapMur, pixmapVie, pixmapCerise;
 	QLabel *printScore;
 	QString score;
 

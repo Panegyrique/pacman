@@ -6,6 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+	cout<<"boum"<<endl;
 	QApplication app(argc, argv);
 
     srand(time(0));
