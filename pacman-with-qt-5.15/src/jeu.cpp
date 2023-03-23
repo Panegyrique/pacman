@@ -8,7 +8,8 @@ using namespace std;
 Fantome::Fantome()
 {
     posX = 0; posY = 0;
-    dir = BAS;
+    dir = DROITE;
+	pass = false;
 }
 
 int Fantome::getPosX() const
@@ -121,40 +122,116 @@ bool Jeu::init()
 	list<Dot>::iterator itDot;
 	list<Energizer>::iterator itEnergizer;
 	
-	largeur = 20;
-	hauteur = 15;
+	largeur = 27;
+	hauteur = 19;
 	nbVie = 3;
 	score = 0;
 	timePower = 0;
 
 	const char terrain_defaut[15][21] = {
-		"####################",
-		"#........##........#",
-		"#.#####..##...####.#",
-		"#........##........#",
+		"1&&&&&&&&&B&&&&&&&&2",
+		"#.........#........#",
+		"#./&&&*...#.../&&&&G",
+		"#.........-........#",
 		"#..................#",
-		"#......#....#......#",
-		"#......#...##......#",
-		"#####..#....#..#####",
-		"#......##...#......#",
-		"#......#....#......#",
+		"#......+....+......#",
+		"#......#.../G......#",
+		"D&&&*..#....#../&&&G",
+		"#......-....#......#",
+		"#...........-......#",
 		"#..................#",
 		"#..................#",
+		"#.....+......+.....#",
 		"#.....#......#.....#",
-		"#.....#......#.....#",
-        "####################"
+        "4&&&&&H&&&&&&H&&&&&3"
+    };
+
+	const char terrain_original[19][28] = {
+		"1&&&&&&&&&&&&B&&&&&&&&&&&&2",
+		"#............#............#",
+		"#./&&*./&&&*.-./&&&*./&&*.#",
+		"#.........................#",
+		"#./&&*.+./&&&B&&&*.+./&&*.#",
+		"#......#.....#.....#......#",
+		"4&&&&2.4&&*..-../&&3.1&&&&3",
+		"IIIII#...............#IIIII",
+		"&&&&&3...1&*PPP/&2...4&&&&&",
+		".........#SSSSSSS#.........",
+		"&&&&&2...4&&&&&&&3...1&&&&&",
+		"IIIII#...............#IIIII",
+		"1&&&&3.1&&*..+../&&2.4&&&&2",
+		"#......#.....#.....#......#",
+		"#./&&*.-./&&&H&&&*.-./&&*.#",
+		"#.........................#",
+		"#./&&*./&&&*.+./&&&*./&&*.#",
+		"#............#............#",
+        "4&&&&&&&&&&&&H&&&&&&&&&&&&3"
     };
 
 	terrain = new Case[largeur*hauteur];
 	for(y=0;y<hauteur;++y)
-		for(x=0;x<largeur;++x)
-            if (terrain_defaut[y][x]=='#')
-                terrain[y*largeur+x] = MUR;
-            else
-			{
-                terrain[y*largeur+x] = VIDE;
-				nbDot += 1;
-			}
+    {
+        for(x=0;x<largeur;++x)
+        {
+            switch(terrain_original[y][x])
+            {
+                case '#':
+                    terrain[y*largeur+x] = MUR_VERTICAL;
+                    break;
+                case '&':
+                    terrain[y*largeur+x] = MUR_HORIZONTAL;
+                    break;
+                case '*':
+                    terrain[y*largeur+x] = ARRONDI_DROIT;
+                    break;
+                case '/':
+                    terrain[y*largeur+x] = ARRONDI_GAUCHE;
+                    break;
+                case '+':
+                    terrain[y*largeur+x] = ARRONDI_HAUT;
+                    break;
+                case '-':
+                    terrain[y*largeur+x] = ARRONDI_BAS;
+                    break;
+                case 'D':
+                    terrain[y*largeur+x] = JONCTION_DROITE;
+                    break;
+                case 'G':
+                    terrain[y*largeur+x] = JONCTION_GAUCHE;
+                    break;
+                case 'H':
+                    terrain[y*largeur+x] = JONCTION_HAUTE;
+                    break;
+                case 'B':
+                    terrain[y*largeur+x] = JONCTION_BASSE;
+                    break;
+                case '1':
+                    terrain[y*largeur+x] = COIN_HAUT_GAUCHE;
+                    break;
+                case '2':
+                    terrain[y*largeur+x] = COIN_HAUT_DROIT;
+                    break;
+                case '3':
+                    terrain[y*largeur+x] = COIN_BAS_DROIT;
+                    break;
+                case '4':
+                    terrain[y*largeur+x] = COIN_BAS_GAUCHE;
+                    break;
+                case 'S':
+                    terrain[y*largeur+x] = SPAWN;
+                    break;
+                case 'I':
+                    terrain[y*largeur+x] = INTERDIT;
+                    break;
+                case 'P':
+                    terrain[y*largeur+x] = PASS;
+                    break;
+                default:
+                    terrain[y*largeur+x] = VIDE;
+					nbDot += 1;
+            }
+        }
+    }
 			
     fantomes.resize(4);
 	for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
@@ -162,7 +239,7 @@ bool Jeu::init()
         do {
             x = rand()%largeur;
             y = rand()%hauteur;
-        } while (terrain[y*largeur+x]!=VIDE);
+        } while (terrain[y*largeur+x]!=SPAWN);
 
         itFantome->posX = x;
         itFantome->posY = y;
@@ -248,20 +325,28 @@ void Jeu::evolue()
         }
 		
 		// Gestion des fantômes
-		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
-		{
+		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
+			for(int i=0; i<3; i++){
+				if(itFantome->posX == 12+i && itFantome->posY == 9)
+					itFantome->dir = (Direction)(rand()%4);
+			}
+
 			testX = itFantome->posX + depX[itFantome->dir];
 			testY = itFantome->posY + depY[itFantome->dir];
 
-			if (terrain[testY*largeur+testX]==VIDE)
-			{
+			if(terrain[testY*largeur+testX] == PASS && itFantome->pass == false){
+				itFantome->posX = testX;
+				itFantome->posY = testY;
+				itFantome->pass = true;
+			}
+			else if (terrain[testY*largeur+testX] == VIDE || terrain[testY*largeur+testX] == SPAWN){
 				itFantome->posX = testX;
 				itFantome->posY = testY;
 			}
 			else
+				// Changement de direction
 				itFantome->dir = (Direction)(rand()%4);
 		}
-		
 		collision();
 	}
 	else
@@ -344,14 +429,25 @@ bool Jeu::deplacePacman(Direction dir)
     testX = posPacmanX + depX[dir];
     testY = posPacmanY + depY[dir];
 
-    if (posValide(testX, testY))
+    if(posPacmanX == 0 && posPacmanY == 9 && dir == GAUCHE)
     {
+        posPacmanX = 26;
+        posPacmanY = 9;
+		return true;
+    }
+    else if(posPacmanX == 26 && posPacmanY == 9 && dir == DROITE)
+    {
+        posPacmanX = 0;
+        posPacmanY = 9;
+		return true;
+    }
+    else if (posValide(testX, testY)){
         posPacmanX = testX;
         posPacmanY = testY;
         return true;
     }
     else
-        return false;
+		return false;
 }
 
 // Collision entre Pacman et Fantôme

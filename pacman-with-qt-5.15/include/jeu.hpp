@@ -3,7 +3,13 @@
 
 #include <list>
 
-typedef enum {VIDE, MUR} Case;
+typedef enum
+{   MUR_VERTICAL, MUR_HORIZONTAL,
+        ARRONDI_DROIT, ARRONDI_GAUCHE, ARRONDI_HAUT, ARRONDI_BAS,
+        JONCTION_DROITE, JONCTION_GAUCHE, JONCTION_HAUTE, JONCTION_BASSE,
+        COIN_HAUT_GAUCHE, COIN_HAUT_DROIT, COIN_BAS_DROIT, COIN_BAS_GAUCHE,
+    VIDE, SPAWN, PASS, INTERDIT
+} Case;
 typedef enum {GAUCHE, DROITE, HAUT, BAS} Direction;
 
 class Jeu;
@@ -15,6 +21,7 @@ class Fantome
   protected:
     int posX, posY;
     Direction dir;
+	bool pass;
 
   public:
     Fantome();

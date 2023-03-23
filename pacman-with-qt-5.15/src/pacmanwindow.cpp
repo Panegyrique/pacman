@@ -15,15 +15,33 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
         exit(-1);
     }
 
-    if (pixmapFantome.load("./data/fantome.png")==false)
+    if (pixmapGhostAzure.load("./data/ghosts/ghost_azure.png")==false)
     {
-        cout<<"Impossible d'ouvrir fantome.png"<<endl;
+        cout<<"Impossible d'ouvrir ghost_azure.png"<<endl;
         exit(-1);
     }
-	
-	if (pixmapFantomePeur.load("./data/fantome_peur.png")==false)
+
+    if (pixmapGhostPink.load("./data/ghosts/ghost_pink.png")==false)
     {
-        cout<<"Impossible d'ouvrir fantome_peur.png"<<endl;
+        cout<<"Impossible d'ouvrir ghost_pink.png"<<endl;
+        exit(-1);
+    }
+
+	if (pixmapGhostRed.load("./data/ghosts/ghost_red.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghost_red.png"<<endl;
+        exit(-1);
+    }
+
+	if (pixmapGhostYellow.load("./data/ghosts/ghost_yellow.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghost_yellow.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapGhostBlue.load("./data/ghosts/ghost_blue.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghost_blue.png"<<endl;
         exit(-1);
     }
 	
@@ -39,9 +57,87 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
         exit(-1);
     }
 
-    if (pixmapMur.load("./data/mur.bmp")==false)
+    if (pixmapMurVertical.load("./data/map/mur_vertical.png")==false)
     {
-        cout<<"Impossible d'ouvrir mur.bmp"<<endl;
+        cout<<"Impossible d'ouvrir mur_vertical.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapMurHorizontal.load("./data/map/mur_horizontal.png")==false)
+    {
+        cout<<"Impossible d'ouvrir mur_horizontal.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiGauche.load("./data/map/arrondi_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir arrondi_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiDroit.load("./data/map/arrondi_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir arrondi_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiHaut.load("./data/map/arrondi_haut.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiBas.load("./data/map/arrondi_bas.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionDroite.load("./data/map/jonction_droite.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_droite.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionGauche.load("./data/map/jonction_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionHaute.load("./data/map/jonction_haute.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_haute.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionBasse.load("./data/map/jonction_basse.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_basse.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinHautGauche.load("./data/map/coin_haut_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinHautDroit.load("./data/map/coin_haut_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinBasDroit.load("./data/map/coin_bas_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinBasGauche.load("./data/map/coin_bas_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas_gauche.png"<<endl;
         exit(-1);
     }
 	
@@ -63,8 +159,8 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     connect(timer, &QTimer::timeout, this, &PacmanWindow::handleTimer);
     timer->start(100);
 
-    largeurCase = pixmapMur.width();
-    hauteurCase = pixmapMur.height();
+    largeurCase = pixmapMurVertical.width();
+    hauteurCase = pixmapMurVertical.height();
 
     resize(jeu.getNbCasesX()*largeurCase, decalage + jeu.getNbCasesY()*hauteurCase);
 	
@@ -80,19 +176,19 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	
 	QLabel *TagScore = new QLabel(this);
     TagScore->setStyleSheet("background-color:black");
-    TagScore->setGeometry(280,8+jeu.getNbCasesY()*hauteurCase,140,40);
+    TagScore->setGeometry(360,8+jeu.getNbCasesY()*hauteurCase,140,40);
     TagScore->setText("<font color='white'>SCORE<\font>");
     TagScore->setFont(Arcade);
 	
 	printScore = new QLabel(this);
     printScore->setStyleSheet("background-color:black");
-    printScore->setGeometry(420,8+jeu.getNbCasesY()*hauteurCase,140,40);
+    printScore->setGeometry(500,8+jeu.getNbCasesY()*hauteurCase,140,40);
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
     printScore->setFont(Arcade);
 	
 	QLabel *Cerise = new QLabel(this);
-	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-40,8+jeu.getNbCasesY()*hauteurCase,32,32);
+	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-80,8+jeu.getNbCasesY()*hauteurCase,32,32);
 	Cerise->setPixmap(pixmapCerise);
 	
 	/*
@@ -106,7 +202,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     QPainter painter(this);
 	
 	//Fond du jeu en noir
-    painter.fillRect(0, 0, 828, 828, Qt::black);
+    painter.fillRect(0, 0, 928, 928, Qt::black);
     painter.beginNativePainting();
     
     int x, y;
@@ -114,15 +210,61 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     // Taille des cases en pixels
     int largeurCase, hauteurCase;
 
-    largeurCase = pixmapMur.width();
-    hauteurCase = pixmapMur.height();
+    largeurCase = pixmapMurVertical.width();
+    hauteurCase = pixmapMurVertical.height();
 
     // Dessine les cases
     for (y=0;y<jeu.getNbCasesY();y++)
+    {
         for (x=0;x<jeu.getNbCasesX();x++)
-			if (jeu.getCase(x,y)==MUR)
-                painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapMur);
-
+        {
+            switch(jeu.getCase(x,y))
+            {
+                case MUR_VERTICAL:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapMurVertical);
+                    break;
+                case MUR_HORIZONTAL:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapMurHorizontal);
+                    break;
+                case ARRONDI_DROIT:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapArrondiDroit);
+                    break;
+                case ARRONDI_GAUCHE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapArrondiGauche);
+                    break;
+                case ARRONDI_HAUT:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapArrondiHaut);
+                    break;
+                case ARRONDI_BAS:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapArrondiBas);
+                    break;
+                case JONCTION_DROITE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapJonctionDroite);
+                    break;
+                case JONCTION_GAUCHE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapJonctionGauche);
+                    break;
+                case JONCTION_HAUTE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapJonctionHaute);
+                    break;
+                case JONCTION_BASSE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapJonctionBasse);
+                    break;
+                case COIN_HAUT_GAUCHE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinHautGauche);
+                    break;
+                case COIN_HAUT_DROIT:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinHautDroit);
+                    break;
+                case COIN_BAS_DROIT:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinBasDroit);
+                    break;
+                case COIN_BAS_GAUCHE:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinBasGauche);
+                    break;
+            }
+        }
+    }
 	// Dessine les pac-gommes
     const list<Dot> &dots = jeu.getDots();
     list<Dot>::const_iterator itDot;
@@ -136,15 +278,33 @@ void PacmanWindow::paintEvent(QPaintEvent *)
         painter.drawPixmap(itEnergizer->getPosX()*largeurCase, itEnergizer->getPosY()*hauteurCase, pixmapEnergizer);
 
     // Dessine les fantomes
+	int compteur = 0;
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
     for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
-		if(jeu.getPowerTime() == 0)
-			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapFantome);
-		else
-			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapFantomePeur);
-	}
+		if(jeu.getPowerTime() == 0){
+			if(compteur >= 4)
+						compteur = 0;
 
+			switch(compteur)
+			{
+				case 0:
+					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostAzure);
+					break;
+				case 1:
+					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostPink);
+					break;
+				case 2:
+					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostRed);
+					break;
+				case 3:
+					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostYellow);
+					break;
+			}
+			compteur++;
+		}else
+			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
+	}
 	// Dessine Pacman
 	painter.drawPixmap(jeu.getPacmanX()*largeurCase, jeu.getPacmanY()*hauteurCase, pixmapPacman);
 
@@ -157,7 +317,7 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key()==Qt::Key_Left)
         jeu.deplacePacman(GAUCHE);
-    else if (event->key()==Qt::Key_Right)
+	else if (event->key()==Qt::Key_Right)
         jeu.deplacePacman(DROITE);
     else if (event->key()==Qt::Key_Up)
         jeu.deplacePacman(HAUT);
@@ -174,6 +334,7 @@ void PacmanWindow::handleTimer()
     update();
 }
 
+/*
 void PacmanWindow::clickMonBouton()
 {
 	
@@ -189,3 +350,4 @@ void PacmanButton::keyPressEvent(QKeyEvent *e)
 	if (parent() != nullptr)
 		QCoreApplication::sendEvent(parent(), e);
 }
+*/
