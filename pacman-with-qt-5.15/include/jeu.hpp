@@ -54,7 +54,8 @@ class Jeu
     Case *terrain;
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
     int posPacmanX, posPacmanY;
-	int nbVie, score, timePower;
+	int nbVie, score;
+	int timePower, eatenPower;
     std::list<Fantome> fantomes;
 	std::list<Dot> dots;
 	std::list<Energizer> energizers;

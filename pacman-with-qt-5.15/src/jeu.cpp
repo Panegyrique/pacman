@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <cmath>
 #include "jeu.hpp"
 
 using namespace std;
@@ -228,7 +229,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 80;
+				timePower = 80; eatenPower = 0; 
                 break;
             }
         }
@@ -361,7 +362,8 @@ void Jeu::collision()
     for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) {
         if(posPacmanX == itFantome->posX && posPacmanY == itFantome->posY){
 			if(timePower>0){
-				score += 250;
+				eatenPower++;
+				score += 100*pow(2,eatenPower);
                 fantomes.erase(itFantome);
                 break;
 			}
