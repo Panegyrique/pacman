@@ -6,11 +6,10 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	cout<<"boum"<<endl;
+	cout<<"Lancement du programme..."<<endl;
 	QApplication app(argc, argv);
-	cout<<"boum"<<endl;
     srand(time(0));
-	cout<<"boum"<<endl;
+	cout<<"Chargement Pacman..."<<endl;
     PacmanWindow wnd;
     wnd.show();
 

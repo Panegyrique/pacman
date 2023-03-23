@@ -128,24 +128,6 @@ bool Jeu::init()
 	score = 0;
 	timePower = 0;
 
-	const char terrain_defaut[15][21] = {
-		"1&&&&&&&&&B&&&&&&&&2",
-		"#.........#........#",
-		"#./&&&*...#.../&&&&G",
-		"#.........-........#",
-		"#..................#",
-		"#......+....+......#",
-		"#......#.../G......#",
-		"D&&&*..#....#../&&&G",
-		"#......-....#......#",
-		"#...........-......#",
-		"#..................#",
-		"#..................#",
-		"#.....+......+.....#",
-		"#.....#......#.....#",
-        "4&&&&&H&&&&&&H&&&&&3"
-    };
-
 	const char terrain_original[19][28] = {
 		"1&&&&&&&&&&&&B&&&&&&&&&&&&2",
 		"#............#............#",
@@ -247,15 +229,30 @@ bool Jeu::init()
     }
 	
 	energizers.resize(4);
+	int compteur = 1;
 	for(itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
 	{
-		do{
-			x = rand()%largeur;
-			y = rand()%hauteur;
-		} while (terrain[y*largeur+x]!=VIDE);
-
-		itEnergizer->posX = x;
-		itEnergizer->posY = y;
+		switch(compteur){
+			case 1:
+		itEnergizer->posX = 1;
+		itEnergizer->posY = 3;
+		break;
+		
+			case 2:
+		itEnergizer->posX = 1;
+		itEnergizer->posY = 15;
+		break;
+		
+			case 3:
+		itEnergizer->posX = 25;
+		itEnergizer->posY = 3;
+		break;
+			
+			case 4:
+		itEnergizer->posX = 25;
+		itEnergizer->posY = 15;
+		}
+		compteur++;
 	}	
 	
 	dots.resize(nbDot);
