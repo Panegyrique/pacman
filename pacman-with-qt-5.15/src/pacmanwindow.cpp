@@ -21,6 +21,12 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
         exit(-1);
     }
 	
+	if (pixmapFantomePeur.load("./data/fantome_peur.png")==false)
+    {
+        cout<<"Impossible d'ouvrir fantome_peur.png"<<endl;
+        exit(-1);
+    }
+	
 	if (pixmapDot.load("./data/dot.png")==false)
     {
         cout<<"Impossible d'ouvrir dot.png"<<endl;
@@ -122,8 +128,12 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     // Dessine les fantomes
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
-    for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
-        painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapFantome);
+    for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
+		if(jeu.getPowerTime() == 0)
+			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapFantome);
+		else
+			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapFantomePeur);
+	}
 
 	// Dessine Pacman
 	painter.drawPixmap(jeu.getPacmanX()*largeurCase, jeu.getPacmanY()*hauteurCase, pixmapPacman);

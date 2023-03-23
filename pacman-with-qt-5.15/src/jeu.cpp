@@ -56,6 +56,7 @@ Jeu::Jeu()
     largeur = 0; hauteur = 0;
     posPacmanX = 0; posPacmanY = 0;
 	nbVie = 0; score = 0;
+	timePower = 0;
 }
 
 Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes), dots(jeu.dots), energizers(jeu.energizers)
@@ -66,6 +67,7 @@ Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes), dots(jeu.dots), energizers(jeu.
     posPacmanY = jeu.posPacmanY;
 	nbVie = jeu.nbVie;
 	score = jeu.score;
+	timePower = jeu.timePower;
 	
     if (jeu.terrain!=nullptr)
     {
@@ -94,6 +96,7 @@ Jeu &Jeu::operator=(const Jeu &jeu)
     posPacmanY = jeu.posPacmanY;
 	nbVie = jeu.nbVie;
 	score = jeu.score;
+	timePower = jeu.timePower;
     fantomes = jeu.fantomes;
 	dots = jeu.dots;
 	energizers = jeu.energizers;
@@ -121,6 +124,7 @@ bool Jeu::init()
 	hauteur = 15;
 	nbVie = 3;
 	score = 0;
+	timePower = 0;
 
 	const char terrain_defaut[15][21] = {
 		"####################",
@@ -215,23 +219,6 @@ void Jeu::evolue()
 		int depX[] = {-1, 1, 0, 0};
 		int depY[] = {0, 0, -1, 1};
 		
-		// Gestion des fantômes
-		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
-		{
-			testX = itFantome->posX + depX[itFantome->dir];
-			testY = itFantome->posY + depY[itFantome->dir];
-
-			if (terrain[testY*largeur+testX]==VIDE)
-			{
-				itFantome->posX = testX;
-				itFantome->posY = testY;
-			}
-			else
-				itFantome->dir = (Direction)(rand()%4);
-		}
-		if(isCollision())
-			nbVie -= 1;
-		
 		// Gestion des super pac-gommes
 		for (itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
         {
@@ -241,6 +228,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
+				timePower = 80;
                 break;
             }
         }
@@ -257,6 +245,23 @@ void Jeu::evolue()
                 break;
             }
         }
+		
+		// Gestion des fantômes
+		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
+		{
+			testX = itFantome->posX + depX[itFantome->dir];
+			testY = itFantome->posY + depY[itFantome->dir];
+
+			if (terrain[testY*largeur+testX]==VIDE)
+			{
+				itFantome->posX = testX;
+				itFantome->posY = testY;
+			}
+			else
+				itFantome->dir = (Direction)(rand()%4);
+		}
+		
+		collision();
 	}
 	else
 		exit(-1);
@@ -296,6 +301,11 @@ void Jeu::setNbVie(int vie)
 int Jeu::getScore() const
 {
 	return score;
+}
+
+int Jeu::getPowerTime() const
+{ 
+	return timePower;
 }
 
 Case Jeu::getCase(int x, int y) const
@@ -344,13 +354,22 @@ bool Jeu::deplacePacman(Direction dir)
 }
 
 // Collision entre Pacman et Fantôme
-bool Jeu::isCollision()
+void Jeu::collision()
 {
     list<Fantome>::iterator itFantome;
 
     for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) {
-        if(posPacmanX == itFantome->posX && posPacmanY == itFantome->posY) 
-			return true;
+        if(posPacmanX == itFantome->posX && posPacmanY == itFantome->posY){
+			if(timePower>0){
+				score += 250;
+                fantomes.erase(itFantome);
+                break;
+			}
+			else
+				nbVie -= 1;
+		}
     }
-    return false;
+	
+	if(timePower > 0) // Timer de 10 secondes
+		timePower -= 1;
 }

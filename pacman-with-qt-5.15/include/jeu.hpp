@@ -54,7 +54,7 @@ class Jeu
     Case *terrain;
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
     int posPacmanX, posPacmanY;
-	int nbVie, score;
+	int nbVie, score, timePower;
     std::list<Fantome> fantomes;
 	std::list<Dot> dots;
 	std::list<Energizer> energizers;
@@ -83,6 +83,8 @@ class Jeu
 	
 	// Retourne le score actuel
 	int getScore() const;
+	
+	int getPowerTime() const;
 
     // Retourne la case à une position donnée
     Case getCase(int, int) const;
@@ -103,7 +105,7 @@ class Jeu
     // Déplace Pacman dans une direction (si la case à atteindre est valide)
     bool deplacePacman(Direction);
 	
-	bool isCollision();
+	void collision();
 	
 };
 
