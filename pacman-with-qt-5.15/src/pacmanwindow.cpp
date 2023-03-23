@@ -9,15 +9,27 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     int largeurCase, hauteurCase;
 	int decalage = 50;
 
-    if (pixmapPacman.load("./data/pacman.bmp")==false)
+    if (pixmapPacman.load("./data/pacman.png")==false)
     {
         cout<<"Impossible d'ouvrir pacman.png"<<endl;
         exit(-1);
     }
 
-    if (pixmapFantome.load("./data/fantome.bmp")==false)
+    if (pixmapFantome.load("./data/fantome.png")==false)
     {
-        cout<<"Impossible d'ouvrir fantome.bmp"<<endl;
+        cout<<"Impossible d'ouvrir fantome.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapDot.load("./data/dot.png")==false)
+    {
+        cout<<"Impossible d'ouvrir dot.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapEnergizer.load("./data/energizer.png")==false)
+    {
+        cout<<"Impossible d'ouvrir energizer.png"<<endl;
         exit(-1);
     }
 
@@ -46,13 +58,26 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	
 	QFontDatabase *MyFontDatabase = new QFontDatabase();
 	MyFontDatabase->addApplicationFont("./data/arcadepi.ttf");
-	QFont Arcade("arcadepix", 20, 1, true);
+	QFont Arcade("arcadepix", 20, 1);
 	
 	QLabel *TagLife = new QLabel(this);
     TagLife->setStyleSheet("background-color:black");
     TagLife->setGeometry(10,8+jeu.getNbCasesY()*hauteurCase,140,40);
     TagLife->setText("<font color='white'>LIFES<\font>");
     TagLife->setFont(Arcade);
+	
+	QLabel *TagScore = new QLabel(this);
+    TagScore->setStyleSheet("background-color:black");
+    TagScore->setGeometry(280,8+jeu.getNbCasesY()*hauteurCase,140,40);
+    TagScore->setText("<font color='white'>SCORE<\font>");
+    TagScore->setFont(Arcade);
+	
+	printScore = new QLabel(this);
+    printScore->setStyleSheet("background-color:black");
+    printScore->setGeometry(420,8+jeu.getNbCasesY()*hauteurCase,140,40);
+	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
+    printScore->setText(score);
+    printScore->setFont(Arcade);
 	
 	/*
 	PacmanButton *btn = new PacmanButton(this);
@@ -82,6 +107,18 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 			if (jeu.getCase(x,y)==MUR)
                 painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapMur);
 
+	// Dessine les pac-gommes
+    const list<Dot> &dots = jeu.getDots();
+    list<Dot>::const_iterator itDot;
+    for (itDot=dots.begin(); itDot!=dots.end(); itDot++)
+        painter.drawPixmap(itDot->getPosX()*largeurCase, itDot->getPosY()*hauteurCase, pixmapDot);
+
+	// Dessine les super pac-gommes
+    const list<Energizer> &energizers = jeu.getEnergizers();
+    list<Energizer>::const_iterator itEnergizer;
+    for (itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
+        painter.drawPixmap(itEnergizer->getPosX()*largeurCase, itEnergizer->getPosY()*hauteurCase, pixmapEnergizer);
+
     // Dessine les fantomes
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
@@ -93,7 +130,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 
 	// Dessine les vies
     for(int i=0;i<jeu.getNbVie();i++)
-        painter.drawPixmap(155+i*35, 9+jeu.getNbCasesY()*hauteurCase , pixmapVie);
+        painter.drawPixmap(150+i*35, 9+jeu.getNbCasesY()*hauteurCase , pixmapVie);
 }
 
 void PacmanWindow::keyPressEvent(QKeyEvent *event)
@@ -112,6 +149,8 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
 void PacmanWindow::handleTimer()
 {
     jeu.evolue();
+	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
+    printScore->setText(score);
     update();
 }
 

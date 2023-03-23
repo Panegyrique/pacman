@@ -1,4 +1,5 @@
 #include <ctime>
+#include <iostream>
 #include "pacmanwindow.hpp"
 
 using namespace std;

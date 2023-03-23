@@ -20,22 +20,53 @@ int Fantome::getPosY() const
     return posY;
 }
 
+Dot::Dot()
+{
+    posX = 0; posY = 0;
+}
+
+int Dot::getPosX() const
+{
+    return posX;
+}
+
+int Dot::getPosY() const
+{
+    return posY;
+}
+
+Energizer::Energizer()
+{
+    posX = 0; posY = 0;
+}
+
+int Energizer::getPosX() const
+{
+    return posX;
+}
+
+int Energizer::getPosY() const
+{
+    return posY;
+}
+
 Jeu::Jeu()
 {
     terrain = nullptr;
     largeur = 0; hauteur = 0;
     posPacmanX = 0; posPacmanY = 0;
-	NbVie = 0;
+	nbVie = 0; score = 0;
 }
 
-Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes)
+Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes), dots(jeu.dots), energizers(jeu.energizers)
 {
     largeur = jeu.largeur;
     hauteur = jeu.hauteur;
     posPacmanX = jeu.posPacmanX;
     posPacmanY = jeu.posPacmanY;
-	NbVie = jeu.NbVie;
-    
+	nbVie = jeu.nbVie;
+	score = jeu.score;
+	
     if (jeu.terrain!=nullptr)
     {
         terrain = new Case[largeur*hauteur];
@@ -61,8 +92,11 @@ Jeu &Jeu::operator=(const Jeu &jeu)
     hauteur = jeu.hauteur;
     posPacmanX = jeu.posPacmanX;
     posPacmanY = jeu.posPacmanY;
-	NbVie = jeu.NbVie;
+	nbVie = jeu.nbVie;
+	score = jeu.score;
     fantomes = jeu.fantomes;
+	dots = jeu.dots;
+	energizers = jeu.energizers;
 
     if (jeu.terrain!=nullptr)
     {
@@ -78,7 +112,15 @@ Jeu &Jeu::operator=(const Jeu &jeu)
 bool Jeu::init()
 {
 	int x, y;
+	int nbDot = 0;
 	list<Fantome>::iterator itFantome;
+	list<Dot>::iterator itDot;
+	list<Energizer>::iterator itEnergizer;
+	
+	largeur = 20;
+	hauteur = 15;
+	nbVie = 3;
+	score = 0;
 
 	const char terrain_defaut[15][21] = {
 		"####################",
@@ -98,21 +140,18 @@ bool Jeu::init()
         "####################"
     };
 
-	largeur = 20;
-	hauteur = 15;
-	NbVie = 3;
-
 	terrain = new Case[largeur*hauteur];
-
 	for(y=0;y<hauteur;++y)
 		for(x=0;x<largeur;++x)
             if (terrain_defaut[y][x]=='#')
                 terrain[y*largeur+x] = MUR;
             else
+			{
                 terrain[y*largeur+x] = VIDE;
-
-    fantomes.resize(10);
-
+				nbDot += 1;
+			}
+			
+    fantomes.resize(4);
 	for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
     {
         do {
@@ -124,7 +163,36 @@ bool Jeu::init()
         itFantome->posY = y;
         itFantome->dir = (Direction)(rand()%4);
     }
+	
+	energizers.resize(4);
+	for(itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
+	{
+		do{
+			x = rand()%largeur;
+			y = rand()%hauteur;
+		} while (terrain[y*largeur+x]!=VIDE);
 
+		itEnergizer->posX = x;
+		itEnergizer->posY = y;
+	}	
+	
+	dots.resize(nbDot);
+	itDot=dots.begin();
+    do
+    {
+        for(y=0;y<hauteur;y++)
+            for(x=0;x<largeur;x++)
+            {
+                if (terrain[y*largeur+x] == VIDE)
+                {
+                    itDot->posX = x;
+                    itDot->posY = y;
+                    itDot++;
+                }
+            }
+    }
+    while(itDot!=dots.end());
+	
     do {
         x = rand()%largeur;
         y = rand()%hauteur;
@@ -141,10 +209,13 @@ void Jeu::evolue()
 	if(getNbVie() > 0){
 		int testX, testY;
 		list<Fantome>::iterator itFantome;
+		list<Dot>::iterator itDot;
+		list<Energizer>::iterator itEnergizer;
 
 		int depX[] = {-1, 1, 0, 0};
 		int depY[] = {0, 0, -1, 1};
-
+		
+		// Gestion des fantômes
 		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
 		{
 			testX = itFantome->posX + depX[itFantome->dir];
@@ -156,11 +227,36 @@ void Jeu::evolue()
 				itFantome->posY = testY;
 			}
 			else
-				// Changement de direction
 				itFantome->dir = (Direction)(rand()%4);
 		}
 		if(isCollision())
-			setNbVie(getNbVie() - 1);
+			nbVie -= 1;
+		
+		// Gestion des super pac-gommes
+		for (itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
+        {
+            testY = itEnergizer->posY;
+            testX = itEnergizer->posX;
+            if (testY==posPacmanY&&testX==posPacmanX)
+            {
+                score += 50 - 10;
+                energizers.erase(itEnergizer);
+                break;
+            }
+        }
+		
+		// Gestion des pac-gommes
+		for (itDot=dots.begin(); itDot!=dots.end(); itDot++)
+        {
+            testY = itDot->posY;
+            testX = itDot->posX;
+            if (testX==posPacmanX&&testY==posPacmanY)
+            {
+                score += 10;
+                dots.erase(itDot);
+                break;
+            }
+        }
 	}
 	else
 		exit(-1);
@@ -189,12 +285,17 @@ int Jeu::getPacmanY() const
 
 int Jeu::getNbVie() const
 {
-    return NbVie;
+    return nbVie;
 }
 
 void Jeu::setNbVie(int vie)
 {
-    NbVie=vie;
+    nbVie=vie;
+}
+
+int Jeu::getScore() const
+{
+	return score;
 }
 
 Case Jeu::getCase(int x, int y) const
@@ -206,6 +307,16 @@ Case Jeu::getCase(int x, int y) const
 const std::list<Fantome> &Jeu::getFantomes() const
 {
     return fantomes;
+}
+
+const std::list<Dot> &Jeu::getDots() const
+{
+	return dots;
+}
+
+const std::list<Energizer> &Jeu::getEnergizers() const
+{
+	return energizers;
 }
 
 bool Jeu::posValide(int x, int y) const
@@ -238,7 +349,7 @@ bool Jeu::isCollision()
     list<Fantome>::iterator itFantome;
 
     for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) {
-        if(getPacmanX() == itFantome->getPosX() && getPacmanY() == itFantome->getPosY()) 
+        if(posPacmanX == itFantome->posX && posPacmanY == itFantome->posY) 
 			return true;
     }
     return false;

@@ -22,14 +22,42 @@ class Fantome
     int getPosY() const;
 };
 
+class Dot
+{
+        friend class Jeu;
+
+    protected:
+        int posX, posY;
+
+    public:
+        Dot();
+        int getPosX() const;
+        int getPosY() const;
+};
+
+class Energizer
+{
+        friend class Jeu;
+
+    protected:
+        int posX, posY;
+
+    public:
+        Energizer();
+        int getPosX() const;
+        int getPosY() const;
+};
+
 class Jeu
 {
   protected:
     Case *terrain;
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
     int posPacmanX, posPacmanY;
-	int NbVie;
+	int nbVie, score;
     std::list<Fantome> fantomes;
+	std::list<Dot> dots;
+	std::list<Energizer> energizers;
 
   public:
     Jeu();
@@ -52,6 +80,9 @@ class Jeu
 	// Retourne et modifie le nombre de vie
 	int getNbVie() const;
 	void setNbVie(int);
+	
+	// Retourne le score actuel
+	int getScore() const;
 
     // Retourne la case à une position donnée
     Case getCase(int, int) const;
@@ -59,6 +90,12 @@ class Jeu
     // Retourne la liste de fantomes en lecture seule
     const std::list<Fantome> &getFantomes() const;
 
+	// Retourne la liste de pac-gommes en lecture seule
+    const std::list<Dot> &getDots() const;
+	
+	// Retourne la liste de super pac-gommes en lecture seule
+    const std::list<Energizer> &getEnergizers() const;
+	
     // Indique si la case à une position donnée existe et est vide
     // (Pacman ou les fantomes peuvent l'occuper)
     bool posValide(int, int) const;
@@ -67,6 +104,7 @@ class Jeu
     bool deplacePacman(Direction);
 	
 	bool isCollision();
+	
 };
 
 #endif
