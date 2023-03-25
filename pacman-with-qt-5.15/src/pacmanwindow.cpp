@@ -161,8 +161,7 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	
 	move = new QTimer(this);
     connect(move, &QTimer::timeout, this, &PacmanWindow::moveTimer);
-    move->setInterval(50+jeu.getNbDot());
-	move->start();
+	move->start(10);
 
     largeurCase = pixmapMurVertical.width();
     hauteurCase = pixmapMurVertical.height();
