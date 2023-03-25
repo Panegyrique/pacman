@@ -62,6 +62,7 @@ class Jeu
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
     int posPacmanX, posPacmanY;
 	int nbVie, score;
+	int nbDot;
 	int timePower, eatenPower;
     std::list<Fantome> fantomes;
 	std::list<Dot> dots;
@@ -76,6 +77,7 @@ class Jeu
 
     bool init();
     void evolue();
+	void moveGhost();
 
     // Retourne les dimensions (en nombre de cases)
     int getNbCasesX() const;
@@ -91,6 +93,8 @@ class Jeu
 	
 	// Retourne le score actuel
 	int getScore() const;
+	
+	int getNbDot() const;
 	
 	int getPowerTime() const;
 
@@ -112,6 +116,8 @@ class Jeu
 
     // Déplace Pacman dans une direction (si la case à atteindre est valide)
     bool deplacePacman(Direction);
+	
+	void deadPacman();
 	
 	void collision();
 	

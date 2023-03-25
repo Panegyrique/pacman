@@ -157,7 +157,12 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &PacmanWindow::handleTimer);
-    timer->start(100);
+    timer->start(10);
+	
+	move = new QTimer(this);
+    connect(move, &QTimer::timeout, this, &PacmanWindow::moveTimer);
+    move->setInterval(50+jeu.getNbDot());
+	move->start();
 
     largeurCase = pixmapMurVertical.width();
     hauteurCase = pixmapMurVertical.height();
@@ -331,6 +336,13 @@ void PacmanWindow::handleTimer()
     jeu.evolue();
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
+    update();
+}
+
+void PacmanWindow::moveTimer()
+{
+	move->setInterval(50+jeu.getNbDot());
+    jeu.moveGhost();
     update();
 }
 

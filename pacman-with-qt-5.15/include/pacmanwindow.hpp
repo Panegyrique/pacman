@@ -16,12 +16,14 @@ class PacmanWindow : public QFrame
             pixmapJonctionDroite, pixmapJonctionGauche, pixmapJonctionHaute, pixmapJonctionBasse,
 			pixmapCoinHautGauche, pixmapCoinHautDroit, pixmapCoinBasDroit, pixmapCoinBasGauche,
 		pixmapDot, pixmapEnergizer, pixmapVie, pixmapCerise;
+	QTimer *move;
 	QLabel *printScore;
 	QString score;
 
   public:
     PacmanWindow(QWidget *pParent=0, Qt::WindowFlags flags=Qt::WindowFlags());
     void handleTimer();
+	void moveTimer();
 	//void clickMonBouton();
 
   protected:

@@ -117,7 +117,6 @@ Jeu &Jeu::operator=(const Jeu &jeu)
 bool Jeu::init()
 {
 	int x, y;
-	int nbDot = 0;
 	list<Fantome>::iterator itFantome;
 	list<Dot>::iterator itDot;
 	list<Energizer>::iterator itEnergizer;
@@ -126,6 +125,7 @@ bool Jeu::init()
 	hauteur = 19;
 	nbVie = 3;
 	score = 0;
+	nbDot = 0;
 	timePower = 0;
 
 	const char terrain_original[19][28] = {
@@ -303,7 +303,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 80; eatenPower = 0; 
+				timePower = 800; eatenPower = 0; 
                 break;
             }
         }
@@ -316,12 +316,27 @@ void Jeu::evolue()
             if (testX==posPacmanX&&testY==posPacmanY)
             {
                 score += 10;
+				nbDot -= 1;
                 dots.erase(itDot);
                 break;
             }
         }
+		collision();
+	}
+	else
+		exit(-1);
+	
+}
+
+void Jeu::moveGhost(){
+	int testX, testY;
+	list<Fantome>::iterator itFantome;
+	
+	int depX[] = {-1, 1, 0, 0};
+	int depY[] = {0, 0, -1, 1};
 		
-		// Gestion des fantômes
+		
+	// Gestion des fantômes
 		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
 			for(int i=0; i<3; i++){
 				if(itFantome->posX == 12+i && itFantome->posY == 9)
@@ -344,11 +359,6 @@ void Jeu::evolue()
 				// Changement de direction
 				itFantome->dir = (Direction)(rand()%4);
 		}
-		collision();
-	}
-	else
-		exit(-1);
-	
 }
 
 int Jeu::getNbCasesX() const
@@ -384,6 +394,11 @@ void Jeu::setNbVie(int vie)
 int Jeu::getScore() const
 {
 	return score;
+}
+
+int Jeu::getNbDot() const
+{
+	return nbDot;
 }
 
 int Jeu::getPowerTime() const
@@ -447,6 +462,13 @@ bool Jeu::deplacePacman(Direction dir)
 		return false;
 }
 
+void Jeu::deadPacman()
+{
+	nbVie -= 1;
+	posPacmanX = 13;
+	posPacmanY = 11; 
+}
+
 // Collision entre Pacman et Fantôme
 void Jeu::collision()
 {
@@ -461,7 +483,7 @@ void Jeu::collision()
                 break;
 			}
 			else
-				nbVie -= 1;
+				deadPacman();
 		}
     }
 	
