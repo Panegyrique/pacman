@@ -122,6 +122,9 @@ class Jeu
 	void deadPacman();
 	
 	void collision();	
+
+    void setHighscores();
+    int getHighscores();
 };
 
 #endif

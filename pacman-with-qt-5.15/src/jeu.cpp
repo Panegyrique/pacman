@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include "jeu.hpp"
 
 using namespace std;
@@ -471,6 +472,54 @@ void Jeu::deadPacman()
 	nbVie -= 1;
 	posPacmanX = 13;
 	posPacmanY = 11; 
+}
+
+void Jeu::setHighscores()
+{
+    int scoreActuel = getScore();
+
+    if(nbVie <= 0)
+    {
+        ifstream fichierLecture("./data/highscores.txt");
+        int highscores;
+
+        if (fichierLecture.is_open()) 
+        {
+            fichierLecture >> highscores;
+
+            if(scoreActuel > highscores)
+            {
+                ofstream fichierEcriture("./data/highscores.txt");
+                fichierEcriture << scoreActuel << endl;
+                fichierEcriture.close();
+            }
+
+            fichierLecture.close();
+        } 
+        else 
+        {
+            cout << "Impossible d'ouvrir le fichier !" << endl;
+        }
+    }
+}
+
+int Jeu::getHighscores()
+{
+    ifstream fichierLecture("./data/highscores.txt");
+    int highscores;
+
+    if (fichierLecture.is_open()) 
+    {
+        fichierLecture >> highscores;
+    } 
+    else 
+    {
+        cout << "Impossible d'ouvrir le fichier !" << endl;
+    }
+
+    fichierLecture.close();
+
+    return highscores;
 }
 
 // Collision entre Pacman et Fantôme

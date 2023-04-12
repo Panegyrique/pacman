@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
     cout<<"Creation de la fenetre"<<endl;
     PacmanWindow wnd;
     wnd.show();
+    cout<<"Creation de la fenetre"<<endl;
+    cout<<"Creation de la fenetre"<<endl;
 
     return app.exec();
 }

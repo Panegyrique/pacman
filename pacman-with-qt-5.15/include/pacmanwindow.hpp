@@ -5,9 +5,13 @@
 #include <QtWidgets/QtWidgets>
 #include "jeu.hpp"
 
+typedef enum {WIN, GAMEOVER} endGame;
+
 class PacmanWindow : public QFrame
 {
   protected:
+	bool doWelcome = true;
+
     Jeu jeu;
     QPixmap pixmapPacman, 
 		pixmapGhostAzure, pixmapGhostPink, pixmapGhostRed, pixmapGhostYellow, pixmapGhostBlue,
@@ -15,10 +19,10 @@ class PacmanWindow : public QFrame
             pixmapArrondiDroit, pixmapArrondiGauche, pixmapArrondiHaut, pixmapArrondiBas,
             pixmapJonctionDroite, pixmapJonctionGauche, pixmapJonctionHaute, pixmapJonctionBasse,
 			pixmapCoinHautGauche, pixmapCoinHautDroit, pixmapCoinBasDroit, pixmapCoinBasGauche,
-		pixmapDot, pixmapEnergizer, pixmapVie, pixmapCerise, pixmapGameOver;
+		pixmapDot, pixmapEnergizer, pixmapVie, pixmapCerise;
 	QTimer *move;
-	QLabel *printScore, *TagLife, *TagScore, *Cerise;
-	QString score;
+	QLabel *printHighscores, *printScore, *TagLife, *TagScore, *Cerise;
+	QString score, highscores;
 
 	Direction directionPacman;
 
@@ -29,11 +33,16 @@ class PacmanWindow : public QFrame
 	void moveTimer();
 
   protected:
+  	void welcome(QPainter *);
+	void createButtonPlayGame(QPainter *, QRectF *);
+	void clickButtonPlayGame();
+
 	void loadImages();
     void paintEvent(QPaintEvent *);
     void keyPressEvent(QKeyEvent *);
-	void gameOver(QPainter *);
-	void createButton(QPainter *, QRectF *);
+	
+	void winOrGameOver(QPainter *, endGame);
+	void createButtonYesNo(QPainter *, QRectF *);
 	void clickButtonYes();
 	void clickButtonNo();
 };

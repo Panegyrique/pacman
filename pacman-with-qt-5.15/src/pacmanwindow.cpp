@@ -12,7 +12,6 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     int largeurCase, hauteurCase;
 	int decalage = 50;
 
-    // Initialisation du jeu
     jeu.init();
 
     QTimer *timer = new QTimer(this);
@@ -31,6 +30,7 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	QFontDatabase *MyFontDatabase = new QFontDatabase();
 	MyFontDatabase->addApplicationFont("./data/arcadepi.ttf");
 	QFont Arcade("arcadepix", 20, 1);
+    QFont ArcadeHighscores("arcadepix", 26);
 	
 	TagLife = new QLabel(this);
     TagLife->setStyleSheet("background-color:black");
@@ -54,6 +54,24 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	Cerise = new QLabel(this);
 	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-80,8+jeu.getNbCasesY()*hauteurCase,32,32);
 	Cerise->setPixmap(pixmapCerise);
+
+    // Record
+    QRectF target(0, 0, 864, 608);
+    int highscoresWidth = 170;
+    int highscoresHeight = 40;
+    int highscoresX;
+    if(jeu.getHighscores() >= 1000)
+        highscoresX = (target.width() - highscoresWidth) / 2 + 20;
+    else
+        highscoresX = (target.width() - highscoresWidth) / 2 + 40;
+    int highscoresY = (3.6 * target.height() / 4) - (highscoresHeight / 2);
+
+    printHighscores = new QLabel(this);
+    printHighscores->setStyleSheet("background-color:black");
+    printHighscores->setGeometry(highscoresX, highscoresY, highscoresWidth, highscoresHeight);
+	highscores = QString("<font color='yellow'>") + QString::number(jeu.getHighscores()) + QString("<\font>");
+    printHighscores->setText(highscores);
+    printHighscores->setFont(ArcadeHighscores);
 }
 
 void PacmanWindow::paintEvent(QPaintEvent *)
@@ -63,7 +81,8 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 	//Fond du jeu en noir
     painter.fillRect(0, 0, 27*32, 19*32+50, Qt::black);
     painter.beginNativePainting();
-    
+
+    // Position
     int x, y;
 
     // Taille des cases en pixels
@@ -124,6 +143,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
             }
         }
     }
+
 	// Dessine les pac-gommes
     const list<Dot> &dots = jeu.getDots();
     list<Dot>::const_iterator itDot;
@@ -166,6 +186,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
         else
 			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
 	}
+
 	// Dessine Pacman
 	painter.drawPixmap(jeu.getPacmanX()*largeurCase, jeu.getPacmanY()*hauteurCase, pixmapPacman);
 
@@ -178,7 +199,15 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 
     // Game Over ?
     if(jeu.getNbVie() <= 0)
-        gameOver(&painter);
+        winOrGameOver(&painter, GAMEOVER);
+
+    // Win ?
+    if(jeu.getNbDot() == 0)
+        winOrGameOver(&painter, WIN);
+
+    // Menu Init ?
+    if(doWelcome == true)
+        welcome(&painter);
 }
 
 void PacmanWindow::directionGhosts()
@@ -405,7 +434,6 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
     if (event->key()==Qt::Key_Left)
     {
         directionPacman = GAUCHE;
-        //jeu.deplacePacman(GAUCHE);
         if(pixmapPacman.load("./data/pacman/pacmanLeft.png")==false)
         {
             cout<<"Impossible d'ouvrir pacmanLeft.png"<<endl;
@@ -419,7 +447,6 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
     else if (event->key()==Qt::Key_Right)
     {
         directionPacman = DROITE;
-        //jeu.deplacePacman(DROITE);
         if(pixmapPacman.load("./data/pacman/pacmanRight.png")==false)
         {
             cout<<"Impossible d'ouvrir pacmanRight.png"<<endl;
@@ -433,7 +460,6 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
     else if (event->key()==Qt::Key_Up)
     {
         directionPacman = HAUT;
-        //jeu.deplacePacman(HAUT);
         if(pixmapPacman.load("./data/pacman/pacmanUp.png")==false)
         {
             cout<<"Impossible d'ouvrir pacmanUp.png"<<endl;
@@ -447,7 +473,6 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
     else if (event->key()==Qt::Key_Down)
     {
         directionPacman = BAS;
-        //jeu.deplacePacman(BAS);
         if(pixmapPacman.load("./data/pacman/pacmanDown.png")==false)
         {
             cout<<"Impossible d'ouvrir pacmanDown.png"<<endl;
@@ -505,36 +530,54 @@ void PacmanWindow::moveTimer()
     update();
 }
 
-void PacmanWindow::gameOver(QPainter *painter)
+void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
 {
+    // Ajout du nouveau record si record
+    jeu.setHighscores();
+
     // Suppression texte
     TagLife->hide();
     TagScore->hide();
     Cerise->hide();
+    jeu.setNbVie(0);
 
     // Image de fond game over
     QRectF target(0, 0, 864, 608); // 27*32 & 19*32
     QRectF source(0, 0, 864, 608);
-    QImage game_over("./data/game_over.png");
-    painter->drawImage(target, game_over, source);
+    QImage imageEnd;
+
+    if(end == WIN)
+    {
+        imageEnd.load("./data/you_win.png");
+    }
+    else
+    {
+        imageEnd.load("./data/game_over.png");
+    }
+    
+    painter->drawImage(target, imageEnd, source);
 
     // Bouger score
     QFont font("arcadepix", 32);
-    int printScoreWidth = 140;
+    int printScoreWidth = 170;
     int printScoreHeight = 40;
-    int printScoreX = (target.width() - printScoreWidth) / 2 + 10;
+    int printScoreX;
+    if(jeu.getScore() >= 1000)
+        printScoreX = (target.width() - printScoreWidth) / 2 - 10;
+    else
+        printScoreX = (target.width() - printScoreWidth) / 2 + 10;
     int printScoreY = (target.height() - printScoreHeight) / 2 + 15;
     printScore->move(printScoreX, printScoreY);
     printScore->setFont(font);
 
-    // Creation des boutons
-    createButton(painter, &target);
+    // Création de bouton Yes et No
+    createButtonYesNo(painter, &target);
 
     // Update
     update();
 }
 
-void PacmanWindow::createButton(QPainter *painter, QRectF *target)
+void PacmanWindow::createButtonYesNo(QPainter *painter, QRectF *target)
 {
 	// Ajout du premier bouton
     int buttonWidth = 150;
@@ -605,6 +648,79 @@ void PacmanWindow::clickButtonYes()
 void PacmanWindow::clickButtonNo()
 {
 	exit(-1);
+}
+
+void PacmanWindow::welcome(QPainter *painter)
+{
+    // Suppression texte
+    TagLife->hide();
+    TagScore->hide();
+    Cerise->hide();
+    printScore->hide();
+    jeu.setNbVie(0);
+
+    // Image de fond game over
+    QRectF target(0, 0, 864, 608); // 27*32 & 19*32
+    QRectF source(0, 0, 864, 608);
+    QImage imageWelcome("./data/play_game.png");
+    painter->drawImage(target, imageWelcome, source);
+
+    // Création du bouton play game
+    createButtonPlayGame(painter, &target);
+
+    // Update
+    update();
+}
+
+void PacmanWindow::createButtonPlayGame(QPainter *painter, QRectF *target)
+{
+    // Ajout du bouton
+    int buttonWidth = 260;
+    int buttonHeight = 80;
+    int buttonPlayGameX = (target->width() - buttonWidth) / 2;
+    int buttonPlayGameY = (2.8* target->height() / 4) - (buttonHeight / 2);
+    QRect buttonPlayGameRect(buttonPlayGameX, buttonPlayGameY, buttonWidth, buttonHeight);
+
+    // Style du bouton
+    QBrush brushPlayGame(QColor(0, 0, 0));
+    QPen penPlayGame(Qt::NoPen);
+    QFont font("arcadepix", 22);
+    painter->setBrush(brushPlayGame);
+    painter->setPen(penPlayGame);
+    painter->setFont(font);
+    painter->drawRoundedRect(buttonPlayGameRect, 5, 5);
+    painter->setPen(QColor(255, 255, 255));
+    painter->drawText(buttonPlayGameRect, Qt::AlignCenter, "Play Game");
+
+    // Assimilation du bouton visuel crée à un vrai bouton
+    PacmanButton *buttonPlayGame = new PacmanButton(this);
+    buttonPlayGame->setGeometry(buttonPlayGameRect);
+    buttonPlayGame->setFlat(true);
+    buttonPlayGame->setCursor(Qt::PointingHandCursor);
+    buttonPlayGame->show();
+
+    // Connexion du premier bouton à une fonction
+    connect(buttonPlayGame, &QPushButton::clicked, this, &PacmanWindow::clickButtonPlayGame);
+}
+
+void PacmanWindow::clickButtonPlayGame()
+{
+    doWelcome = false;
+
+    QFont Arcade("arcadepix", 20, 1);
+    int printScoreX = 500;
+    int printScoreY = 8 + jeu.getNbCasesY() * pixmapMurVertical.height();
+    printScore->move(printScoreX, printScoreY);
+    printScore->setFont(Arcade);
+
+    TagLife->show();
+    TagScore->show();
+    Cerise->show();
+    printScore->show();
+    printHighscores->hide();
+
+    jeu.init();
+    update();
 }
 
 void PacmanWindow::loadImages()
