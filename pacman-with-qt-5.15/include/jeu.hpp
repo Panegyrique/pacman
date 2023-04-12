@@ -10,6 +10,7 @@ typedef enum
         COIN_HAUT_GAUCHE, COIN_HAUT_DROIT, COIN_BAS_DROIT, COIN_BAS_GAUCHE,
     VIDE, SPAWN, PASS, INTERDIT
 } Case;
+
 typedef enum {GAUCHE, DROITE, HAUT, BAS} Direction;
 
 class Jeu;
@@ -21,17 +22,19 @@ class Fantome
   protected:
     int posX, posY;
     Direction dir;
-	bool pass;
+	bool pass, fear;
 
   public:
     Fantome();
     int getPosX() const;
     int getPosY() const;
+	bool getFear() const;
+    Direction getDirection() const;
 };
 
 class Dot
 {
-        friend class Jeu;
+    friend class Jeu;
 
     protected:
         int posX, posY;
@@ -44,7 +47,7 @@ class Dot
 
 class Energizer
 {
-        friend class Jeu;
+    friend class Jeu;
 
     protected:
         int posX, posY;
@@ -93,6 +96,9 @@ class Jeu
 	
 	// Retourne le score actuel
 	int getScore() const;
+	
+	void setHighscores();
+    int getHighscores();
 	
 	int getNbDot() const;
 	

@@ -1,7 +1,10 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include "jeu.hpp"
+#include "pacmanwindow.hpp"
+
 
 using namespace std;
 
@@ -20,6 +23,16 @@ int Fantome::getPosX() const
 int Fantome::getPosY() const
 {
     return posY;
+}
+
+bool Fantome::getFear() const
+{
+	return fear;
+}
+
+Direction Fantome::getDirection() const
+{
+    return dir;
 }
 
 Dot::Dot()
@@ -233,25 +246,26 @@ bool Jeu::init()
 	int compteur = 1;
 	for(itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
 	{
-		switch(compteur){
-			case 1:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 3;
-		break;
+		switch(compteur)
+        {
+            case 1:
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 3;
+                break;
 		
 			case 2:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 15;
-		break;
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 15;
+                break;
 		
 			case 3:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 3;
-		break;
-			
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 3;
+                break;
+                    
 			case 4:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 15;
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 15;
 		}
 		compteur++;
 	}	
@@ -304,7 +318,10 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 800; eatenPower = 0; 
+				timePower = 5000; eatenPower = 0; 
+				for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
+					itFantome->fear = true;
+				}
                 break;
             }
         }
@@ -332,7 +349,6 @@ void Jeu::moveGhost(){
 	
 	int depX[] = {-1, 1, 0, 0};
 	int depY[] = {0, 0, -1, 1};
-		
 		
 	// Gestion des fantômes
 		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
@@ -394,6 +410,54 @@ int Jeu::getScore() const
 	return score;
 }
 
+void Jeu::setHighscores()
+{
+    int scoreActuel = getScore();
+
+    if(nbVie <= 0)
+    {
+        ifstream fichierLecture("./data/highscores.txt");
+        int highscores;
+
+        if (fichierLecture.is_open()) 
+        {
+            fichierLecture >> highscores;
+
+            if(scoreActuel > highscores)
+            {
+                ofstream fichierEcriture("./data/highscores.txt");
+                fichierEcriture << scoreActuel << endl;
+                fichierEcriture.close();
+            }
+
+            fichierLecture.close();
+        } 
+        else 
+        {
+            cout << "Impossible d'ouvrir le fichier !" << endl;
+        }
+    }
+}
+
+int Jeu::getHighscores()
+{
+    ifstream fichierLecture("./data/highscores.txt");
+    int highscores;
+
+    if (fichierLecture.is_open()) 
+    {
+        fichierLecture >> highscores;
+    } 
+    else 
+    {
+        cout << "Impossible d'ouvrir le fichier !" << endl;
+    }
+
+    fichierLecture.close();
+
+    return highscores;
+}
+
 int Jeu::getNbDot() const
 {
 	return nbDot;
@@ -451,7 +515,8 @@ bool Jeu::deplacePacman(Direction dir)
         posPacmanY = 9;
 		return true;
     }
-    else if (posValide(testX, testY)){
+    else if (posValide(testX, testY))
+    {
         posPacmanX = testX;
         posPacmanY = testY;
         return true;
@@ -465,6 +530,10 @@ void Jeu::deadPacman()
 	nbVie -= 1;
 	posPacmanX = 13;
 	posPacmanY = 11; 
+	
+	list<Fantome>::iterator itFantome;
+    for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) 
+		itFantome->fear == false;
 }
 
 // Collision entre Pacman et Fantôme
@@ -474,10 +543,13 @@ void Jeu::collision()
 
     for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) {
         if(posPacmanX == itFantome->posX && posPacmanY == itFantome->posY){
-			if(timePower>0){
+			if(timePower>0 && itFantome->fear == true){
 				eatenPower++;
 				score += 100*pow(2,eatenPower);
-                fantomes.erase(itFantome);
+				itFantome->posX = 12;
+				itFantome->posY = 9;
+				itFantome->pass = false;
+				itFantome->fear = false;
                 break;
 			}
 			else
@@ -487,4 +559,9 @@ void Jeu::collision()
 	
 	if(timePower > 0) // Timer de 10 secondes
 		timePower -= 1;
+	else{
+		for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++){
+			itFantome->fear = false;
+		}
+	}
 }
