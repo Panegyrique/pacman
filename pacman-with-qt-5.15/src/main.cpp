@@ -6,16 +6,15 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	cout<<"Lancement du programme..."<<endl;
-	QApplication app(argc, argv);
+    cout<<"Lancement du jeu"<<endl;
+    QApplication app(argc, argv);
+
+    cout<<"Initialisation du timer"<<endl;
     srand(time(0));
-	cout<<"Chargement Pacman..."<<endl;
+
+    cout<<"Creation de la fenetre"<<endl;
     PacmanWindow wnd;
     wnd.show();
-    cout<<"Game 1"<<endl;
-    cout<<"Game 2"<<endl;
-    cout<<"Game 1"<<endl;
-    cout<<"Game 1"<<endl;
 
     return app.exec();
 }

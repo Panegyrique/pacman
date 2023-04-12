@@ -20,12 +20,16 @@ class PacmanWindow : public QFrame
 	QLabel *printScore, *TagLife, *TagScore, *Cerise;
 	QString score;
 
+	Direction directionPacman;
+
   public:
     PacmanWindow(QWidget *pParent=0, Qt::WindowFlags flags=Qt::WindowFlags());
+	void directionGhosts();
     void handleTimer();
 	void moveTimer();
 
   protected:
+	void loadImages();
     void paintEvent(QPaintEvent *);
     void keyPressEvent(QKeyEvent *);
 	void gameOver(QPainter *);

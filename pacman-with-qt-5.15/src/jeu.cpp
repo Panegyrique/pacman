@@ -22,6 +22,11 @@ int Fantome::getPosY() const
     return posY;
 }
 
+Direction Fantome::getDirection() const
+{
+    return dir;
+}
+
 Dot::Dot()
 {
     posX = 0; posY = 0;
@@ -233,25 +238,26 @@ bool Jeu::init()
 	int compteur = 1;
 	for(itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
 	{
-		switch(compteur){
-			case 1:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 3;
-		break;
+		switch(compteur)
+        {
+            case 1:
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 3;
+                break;
 		
 			case 2:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 15;
-		break;
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 15;
+                break;
 		
 			case 3:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 3;
-		break;
-			
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 3;
+                break;
+                    
 			case 4:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 15;
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 15;
 		}
 		compteur++;
 	}	
@@ -332,7 +338,6 @@ void Jeu::moveGhost(){
 	
 	int depX[] = {-1, 1, 0, 0};
 	int depY[] = {0, 0, -1, 1};
-		
 		
 	// Gestion des fantômes
 		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
@@ -451,7 +456,8 @@ bool Jeu::deplacePacman(Direction dir)
         posPacmanY = 9;
 		return true;
     }
-    else if (posValide(testX, testY)){
+    else if (posValide(testX, testY))
+    {
         posPacmanX = testX;
         posPacmanY = testY;
         return true;

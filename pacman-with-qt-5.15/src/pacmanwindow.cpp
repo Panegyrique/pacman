@@ -5,154 +5,14 @@ using namespace std;
 
 PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pParent, flags)
 {
+    // Chargement des images
+    loadImages();
+
     // Taille des cases en pixels
     int largeurCase, hauteurCase;
 	int decalage = 50;
 
-    if (pixmapPacman.load("./data/pacman.png")==false)
-    {
-        cout<<"Impossible d'ouvrir pacman.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapGhostAzure.load("./data/ghosts/ghost_azure.png")==false)
-    {
-        cout<<"Impossible d'ouvrir ghost_azure.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapGhostPink.load("./data/ghosts/ghost_pink.png")==false)
-    {
-        cout<<"Impossible d'ouvrir ghost_pink.png"<<endl;
-        exit(-1);
-    }
-
-	if (pixmapGhostRed.load("./data/ghosts/ghost_red.png")==false)
-    {
-        cout<<"Impossible d'ouvrir ghost_red.png"<<endl;
-        exit(-1);
-    }
-
-	if (pixmapGhostYellow.load("./data/ghosts/ghost_yellow.png")==false)
-    {
-        cout<<"Impossible d'ouvrir ghost_yellow.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapGhostBlue.load("./data/ghosts/ghost_blue.png")==false)
-    {
-        cout<<"Impossible d'ouvrir ghost_blue.png"<<endl;
-        exit(-1);
-    }
-	
-	if (pixmapDot.load("./data/dot.png")==false)
-    {
-        cout<<"Impossible d'ouvrir dot.png"<<endl;
-        exit(-1);
-    }
-	
-	if (pixmapEnergizer.load("./data/energizer.png")==false)
-    {
-        cout<<"Impossible d'ouvrir energizer.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapMurVertical.load("./data/map/mur_vertical.png")==false)
-    {
-        cout<<"Impossible d'ouvrir mur_vertical.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapMurHorizontal.load("./data/map/mur_horizontal.png")==false)
-    {
-        cout<<"Impossible d'ouvrir mur_horizontal.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapArrondiGauche.load("./data/map/arrondi_gauche.png")==false)
-    {
-        cout<<"Impossible d'ouvrir arrondi_gauche.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapArrondiDroit.load("./data/map/arrondi_droit.png")==false)
-    {
-        cout<<"Impossible d'ouvrir arrondi_droit.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapArrondiHaut.load("./data/map/arrondi_haut.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_haut.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapArrondiBas.load("./data/map/arrondi_bas.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_bas.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapJonctionDroite.load("./data/map/jonction_droite.png")==false)
-    {
-        cout<<"Impossible d'ouvrir jonction_droite.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapJonctionGauche.load("./data/map/jonction_gauche.png")==false)
-    {
-        cout<<"Impossible d'ouvrir jonction_gauche.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapJonctionHaute.load("./data/map/jonction_haute.png")==false)
-    {
-        cout<<"Impossible d'ouvrir jonction_haute.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapJonctionBasse.load("./data/map/jonction_basse.png")==false)
-    {
-        cout<<"Impossible d'ouvrir jonction_basse.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapCoinHautGauche.load("./data/map/coin_haut_gauche.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_haut_gauche.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapCoinHautDroit.load("./data/map/coin_haut_droit.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_haut_droit.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapCoinBasDroit.load("./data/map/coin_bas_droit.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_bas_droit.png"<<endl;
-        exit(-1);
-    }
-
-    if (pixmapCoinBasGauche.load("./data/map/coin_bas_gauche.png")==false)
-    {
-        cout<<"Impossible d'ouvrir coin_bas_gauche.png"<<endl;
-        exit(-1);
-    }
-	
-	if (pixmapVie.load("./data/lifes.png")==false)
-    {
-        cout<<"Impossible d'ouvrir lifes.png"<<endl;
-        exit(-1);
-    }
-	
-	if (pixmapCerise.load("./data/cerise.png")==false)
-    {
-        cout<<"Impossible d'ouvrir cerise.png"<<endl;
-        exit(-1);
-    }
-
+    // Initialisation du jeu
     jeu.init();
 
     QTimer *timer = new QTimer(this);
@@ -281,9 +141,10 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
     for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
-		if(jeu.getPowerTime() == 0){
+		if(jeu.getPowerTime() == 0)
+        {
 			if(compteur >= 4)
-						compteur = 0;
+				compteur = 0;
 
 			switch(compteur)
 			{
@@ -301,7 +162,8 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 					break;
 			}
 			compteur++;
-		}else
+		}
+        else
 			painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
 	}
 	// Dessine Pacman
@@ -311,21 +173,292 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     for(int i=0;i<jeu.getNbVie();i++)
         painter.drawPixmap(150+i*35, 9+jeu.getNbCasesY()*hauteurCase , pixmapVie);
 
+    // Changement de direction des fantomes ?
+    directionGhosts();
+
     // Game Over ?
     if(jeu.getNbVie() <= 0)
         gameOver(&painter);
 }
 
+void PacmanWindow::directionGhosts()
+{
+    const list<Fantome> &fantomes = jeu.getFantomes();
+    list<Fantome>::const_iterator itFantome;
+    int compteur = 0;
+
+    for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++)
+    {
+		if(jeu.getPowerTime() == 0)
+        {
+			if(compteur >= 4)
+				compteur = 0;
+
+            Direction dirGhost = itFantome->getDirection();
+
+			switch(dirGhost)
+			{
+				case GAUCHE:
+					switch(compteur)
+                    {
+                        case 0:
+                            if(pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureLeft.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostAzureLeft.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureLeft.png");
+                            }
+                            break;
+                        case 1:
+                            if(pixmapGhostPink.load("./data/ghosts/pink/ghostPinkLeft.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostPinkLeft.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostPink.load("./data/ghosts/pink/ghostPinkLeft.png");
+                            }
+                            break;
+                        case 2:
+                            if(pixmapGhostRed.load("./data/ghosts/red/ghostRedLeft.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostRedLeft.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostRed.load("./data/ghosts/red/ghostRedLeft.png");
+                            }
+                            break;
+                        case 3:
+                            if(pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowLeft.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostYellowLeft.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowLeft.png");
+                            }
+                            break;
+                    }
+					break;
+				case DROITE:
+                    switch(compteur)
+                    {
+                        case 0:
+                            if(pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureRight.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostAzureRight.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureRight.png");
+                            }
+                            break;
+                        case 1:
+                            if(pixmapGhostPink.load("./data/ghosts/pink/ghostPinkRight.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostPinkRight.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostPink.load("./data/ghosts/pink/ghostPinkRight.png");
+                            }
+                            break;
+                        case 2:
+                            if(pixmapGhostRed.load("./data/ghosts/red/ghostRedRight.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostRedRight.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostRed.load("./data/ghosts/red/ghostRedRight.png");
+                            }
+                            break;
+                        case 3:
+                            if(pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowRight.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostYellowRight.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowRight.png");
+                            }
+                            break;
+                    }
+					break;
+				case HAUT:
+                    switch(compteur)
+                    {
+                        case 0:
+                            if(pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureUp.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostAzureUp.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureUp.png");
+                            }
+                            break;
+                        case 1:
+                            if(pixmapGhostPink.load("./data/ghosts/pink/ghostPinkUp.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostPinkUp.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostPink.load("./data/ghosts/pink/ghostPinkUp.png");
+                            }
+                            break;
+                        case 2:
+                            if(pixmapGhostRed.load("./data/ghosts/red/ghostRedUp.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostRedUp.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostRed.load("./data/ghosts/red/ghostRedUp.png");
+                            }
+                            break;
+                        case 3:
+                            if(pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowUp.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostYellowUp.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowUp.png");
+                            }
+                            break;
+                    }
+					break;
+				case BAS:
+                    switch(compteur)
+                    {
+                        case 0:
+                            if(pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureDown.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostAzureDown.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureDown.png");
+                            }
+                            break;
+                        case 1:
+                            if(pixmapGhostPink.load("./data/ghosts/pink/ghostPinkDown.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostPinkDown.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostPink.load("./data/ghosts/pink/ghostPinkDown.png");
+                            }
+                            break;
+                        case 2:
+                            if(pixmapGhostRed.load("./data/ghosts/red/ghostRedDown.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostRedDown.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostRed.load("./data/ghosts/red/ghostRedDown.png");
+                            }
+                            break;
+                        case 3:
+                            if(pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowDown.png")==false)
+                            {
+                                cout<<"Impossible d'ouvrir ghostYellowDown.png"<<endl;
+                                exit(-1);
+                            }
+                            else
+                            {
+                                pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowDown.png");
+                            }
+                            break;
+                    }
+					break;
+			}
+			compteur++;
+		}
+    }
+}
+
 void PacmanWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key()==Qt::Key_Left)
-        jeu.deplacePacman(GAUCHE);
-	else if (event->key()==Qt::Key_Right)
-        jeu.deplacePacman(DROITE);
+    {
+        directionPacman = GAUCHE;
+        //jeu.deplacePacman(GAUCHE);
+        if(pixmapPacman.load("./data/pacman/pacmanLeft.png")==false)
+        {
+            cout<<"Impossible d'ouvrir pacmanLeft.png"<<endl;
+            exit(-1);
+        }
+        else
+        {
+            pixmapPacman.load("./data/pacman/pacmanLeft.png");
+        }
+    }
+    else if (event->key()==Qt::Key_Right)
+    {
+        directionPacman = DROITE;
+        //jeu.deplacePacman(DROITE);
+        if(pixmapPacman.load("./data/pacman/pacmanRight.png")==false)
+        {
+            cout<<"Impossible d'ouvrir pacmanRight.png"<<endl;
+            exit(-1);
+        }
+        else
+        {
+            pixmapPacman.load("./data/pacman/pacmanRight.png");
+        }
+    }
     else if (event->key()==Qt::Key_Up)
-        jeu.deplacePacman(HAUT);
+    {
+        directionPacman = HAUT;
+        //jeu.deplacePacman(HAUT);
+        if(pixmapPacman.load("./data/pacman/pacmanUp.png")==false)
+        {
+            cout<<"Impossible d'ouvrir pacmanUp.png"<<endl;
+            exit(-1);
+        }
+        else
+        {
+            pixmapPacman.load("./data/pacman/pacmanUp.png");
+        }
+    }
     else if (event->key()==Qt::Key_Down)
-        jeu.deplacePacman(BAS);
+    {
+        directionPacman = BAS;
+        //jeu.deplacePacman(BAS);
+        if(pixmapPacman.load("./data/pacman/pacmanDown.png")==false)
+        {
+            cout<<"Impossible d'ouvrir pacmanDown.png"<<endl;
+            exit(-1);
+        }
+        else
+        {
+            pixmapPacman.load("./data/pacman/pacmanDown.png");
+        }
+    }
+
     update();
 }
 
@@ -341,6 +474,34 @@ void PacmanWindow::moveTimer()
 {
 	move->setInterval(50+jeu.getNbDot());
     jeu.moveGhost();
+
+    static int temps = 0;
+    temps++;
+    if (temps % 2 == 0)
+    {
+        pixmapPacman.load("./data/pacman/pacmanFull.png");
+    }
+    else
+    {
+        switch(directionPacman)
+        {
+            case GAUCHE:
+                pixmapPacman.load("./data/pacman/pacmanLeft.png");
+                break;
+            case DROITE:
+                pixmapPacman.load("./data/pacman/pacmanRight.png");
+                break;
+            case HAUT:
+                pixmapPacman.load("./data/pacman/pacmanUp.png");
+                break;
+            case BAS:
+                pixmapPacman.load("./data/pacman/pacmanDown.png");
+                break;
+        }
+    }
+
+    jeu.deplacePacman(directionPacman);
+
     update();
 }
 
@@ -444,6 +605,153 @@ void PacmanWindow::clickButtonYes()
 void PacmanWindow::clickButtonNo()
 {
 	exit(-1);
+}
+
+void PacmanWindow::loadImages()
+{
+    if (pixmapPacman.load("./data/pacman/pacmanFull.png")==false)
+    {
+        cout<<"Impossible d'ouvrir pacman.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapGhostAzure.load("./data/ghosts/azure/ghostAzureDown.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghostAzureDown.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapGhostPink.load("./data/ghosts/pink/ghostPinkDown.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghostPinkDown.png"<<endl;
+        exit(-1);
+    }
+
+	if (pixmapGhostRed.load("./data/ghosts/red/ghostRedDown.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghostRedDown.png"<<endl;
+        exit(-1);
+    }
+
+	if (pixmapGhostYellow.load("./data/ghosts/yellow/ghostYellowDown.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghostYellowDown.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapGhostBlue.load("./data/ghosts/ghost_blue.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghost_blue.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapDot.load("./data/dot.png")==false)
+    {
+        cout<<"Impossible d'ouvrir dot.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapEnergizer.load("./data/energizer.png")==false)
+    {
+        cout<<"Impossible d'ouvrir energizer.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapMurVertical.load("./data/map/mur_vertical.png")==false)
+    {
+        cout<<"Impossible d'ouvrir mur_vertical.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapMurHorizontal.load("./data/map/mur_horizontal.png")==false)
+    {
+        cout<<"Impossible d'ouvrir mur_horizontal.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiGauche.load("./data/map/arrondi_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir arrondi_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiDroit.load("./data/map/arrondi_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir arrondi_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiHaut.load("./data/map/arrondi_haut.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapArrondiBas.load("./data/map/arrondi_bas.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionDroite.load("./data/map/jonction_droite.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_droite.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionGauche.load("./data/map/jonction_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionHaute.load("./data/map/jonction_haute.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_haute.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapJonctionBasse.load("./data/map/jonction_basse.png")==false)
+    {
+        cout<<"Impossible d'ouvrir jonction_basse.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinHautGauche.load("./data/map/coin_haut_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut_gauche.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinHautDroit.load("./data/map/coin_haut_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_haut_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinBasDroit.load("./data/map/coin_bas_droit.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas_droit.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapCoinBasGauche.load("./data/map/coin_bas_gauche.png")==false)
+    {
+        cout<<"Impossible d'ouvrir coin_bas_gauche.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapVie.load("./data/lifes.png")==false)
+    {
+        cout<<"Impossible d'ouvrir lifes.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapCerise.load("./data/cerise.png")==false)
+    {
+        cout<<"Impossible d'ouvrir cerise.png"<<endl;
+        exit(-1);
+    }
 }
 
 PacmanButton::PacmanButton(QWidget *pParent): QPushButton(pParent)
