@@ -1,7 +1,10 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include "jeu.hpp"
+#include "pacmanwindow.hpp"
+
 
 using namespace std;
 
@@ -10,7 +13,6 @@ Fantome::Fantome()
     posX = 0; posY = 0;
     dir = DROITE;
 	pass = false;
-	fear = false;
 }
 
 int Fantome::getPosX() const
@@ -26,6 +28,11 @@ int Fantome::getPosY() const
 bool Fantome::getFear() const
 {
 	return fear;
+}
+
+Direction Fantome::getDirection() const
+{
+    return dir;
 }
 
 Dot::Dot()
@@ -239,25 +246,26 @@ bool Jeu::init()
 	int compteur = 1;
 	for(itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
 	{
-		switch(compteur){
-			case 1:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 3;
-		break;
+		switch(compteur)
+        {
+            case 1:
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 3;
+                break;
 		
 			case 2:
-		itEnergizer->posX = 1;
-		itEnergizer->posY = 15;
-		break;
+                itEnergizer->posX = 1;
+                itEnergizer->posY = 15;
+                break;
 		
 			case 3:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 3;
-		break;
-			
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 3;
+                break;
+                    
 			case 4:
-		itEnergizer->posX = 25;
-		itEnergizer->posY = 15;
+                itEnergizer->posX = 25;
+                itEnergizer->posY = 15;
 		}
 		compteur++;
 	}	
@@ -310,7 +318,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 800; eatenPower = 0; 
+				timePower = 5000; eatenPower = 0; 
 				for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
 					itFantome->fear = true;
 				}
@@ -341,7 +349,6 @@ void Jeu::moveGhost(){
 	
 	int depX[] = {-1, 1, 0, 0};
 	int depY[] = {0, 0, -1, 1};
-		
 		
 	// Gestion des fantômes
 		for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
@@ -403,6 +410,54 @@ int Jeu::getScore() const
 	return score;
 }
 
+void Jeu::setHighscores()
+{
+    int scoreActuel = getScore();
+
+    if(nbVie <= 0)
+    {
+        ifstream fichierLecture("./data/highscores.txt");
+        int highscores;
+
+        if (fichierLecture.is_open()) 
+        {
+            fichierLecture >> highscores;
+
+            if(scoreActuel > highscores)
+            {
+                ofstream fichierEcriture("./data/highscores.txt");
+                fichierEcriture << scoreActuel << endl;
+                fichierEcriture.close();
+            }
+
+            fichierLecture.close();
+        } 
+        else 
+        {
+            cout << "Impossible d'ouvrir le fichier !" << endl;
+        }
+    }
+}
+
+int Jeu::getHighscores()
+{
+    ifstream fichierLecture("./data/highscores.txt");
+    int highscores;
+
+    if (fichierLecture.is_open()) 
+    {
+        fichierLecture >> highscores;
+    } 
+    else 
+    {
+        cout << "Impossible d'ouvrir le fichier !" << endl;
+    }
+
+    fichierLecture.close();
+
+    return highscores;
+}
+
 int Jeu::getNbDot() const
 {
 	return nbDot;
@@ -439,8 +494,9 @@ bool Jeu::posValide(int x, int y) const
     return (x>=0 && x<largeur && y>=0 && y<hauteur && terrain[y*largeur+x]==VIDE);
 }
 
-bool Jeu::deplacePacman(Direction dir)
+Direction Jeu::deplacePacman(Direction dir)
 {
+	static Direction actualDir;
     int depX[] = {-1, 1, 0, 0};
     int depY[] = {0, 0, -1, 1};
     int testX, testY;
@@ -452,21 +508,30 @@ bool Jeu::deplacePacman(Direction dir)
     {
         posPacmanX = 26;
         posPacmanY = 9;
-		return true;
+		actualDir = GAUCHE;
     }
     else if(posPacmanX == 26 && posPacmanY == 9 && dir == DROITE)
     {
         posPacmanX = 0;
         posPacmanY = 9;
-		return true;
+		actualDir = DROITE;
     }
-    else if (posValide(testX, testY)){
+    else if (posValide(testX, testY))
+    {
         posPacmanX = testX;
         posPacmanY = testY;
-        return true;
+		actualDir = dir;
     }
-    else
-		return false;
+    else 
+	{
+		testX = posPacmanX + depX[actualDir];
+		testY = posPacmanY + depY[actualDir];
+		if (posValide(testX, testY)){
+			posPacmanX = testX;
+			posPacmanY = testY;
+		}
+	}
+	return actualDir;
 }
 
 void Jeu::deadPacman()
@@ -474,6 +539,10 @@ void Jeu::deadPacman()
 	nbVie -= 1;
 	posPacmanX = 13;
 	posPacmanY = 11; 
+	
+	list<Fantome>::iterator itFantome;
+    for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) 
+		itFantome->fear == false;
 }
 
 // Collision entre Pacman et Fantôme
