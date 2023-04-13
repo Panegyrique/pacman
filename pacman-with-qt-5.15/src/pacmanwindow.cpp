@@ -396,7 +396,7 @@ void PacmanWindow::moveTimer()
     static int temps = 0;
     temps++;
 	
-	if(temps % 15 == 0) 
+	if(temps % 25 == 0) 
 		jeu.moveGhost();   
     if (temps % 20 < 10)
         pixmapPacman.load("./data/pacman/pacmanFull.png");
