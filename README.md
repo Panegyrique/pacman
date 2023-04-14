@@ -21,7 +21,7 @@ Installer la police de caractère Arcadepix disponible dans le dossier data ou l
    ∟ lib
 ```
 
-Ne pas oublier d'insérer les bibliothèques dynamiques 
+Ne pas oublier d'insérer les bibliothèques dynamiques ``` bash pacman-with-qt-5.15 ```
 ``` bash
 fmodex.dll 
 Qt5Core.dll
