@@ -383,7 +383,7 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
 void PacmanWindow::handleTimer()
 {
     jeu.evolue();
-	if(jeu.getPowerTime() == 4999) generateSound("./data/sound/voila-j-aime-bien.mp3");
+	if(jeu.getPowerTime() == 7999) generateSound("./data/sound/voila-j-aime-bien.mp3");
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
     update();
@@ -439,12 +439,7 @@ void PacmanWindow::moveTimer()
 }
 
 void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
-{
-	if(!GameOver){
-		generateSound("./data/sound/death.mp3");
-		GameOver = true;
-	}
-	
+{	
     // Ajout du nouveau record si record
     jeu.setHighscores();
 
@@ -465,6 +460,10 @@ void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
     }
     else
     {
+		if(!GameOver){
+		generateSound("./data/sound/death.mp3");
+		GameOver = true;
+		}
         imageEnd.load("./data/game_over.png");
     }
     

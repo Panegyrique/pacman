@@ -140,6 +140,7 @@ bool Jeu::init()
 	score = 0;
 	nbDot = 0;
 	timePower = 0;
+	nbDot = 0;
 
 	const char terrain_original[19][28] = {
 		"1&&&&&&&&&&&&B&&&&&&&&&&&&2",
@@ -318,7 +319,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 5000; eatenPower = 0; 
+				timePower = 8000; eatenPower = 0; 
 				for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
 					itFantome->fear = true;
 				}
