@@ -3,15 +3,26 @@
 
 #include <list>
 
+#define LARGEUR 27
+#define HAUTEUR 19
+#define NB_VIE 3
+#define NB_FANTOME 4
+#define Proba_cerise 70000
+#define POWERTIME 8000
+#define POSX_init 13
+#define POSY_init 15
+#define POSX_FRUIT 13
+#define POSY_FRUIT 11
+
 typedef enum
 {   MUR_VERTICAL, MUR_HORIZONTAL,
         ARRONDI_DROIT, ARRONDI_GAUCHE, ARRONDI_HAUT, ARRONDI_BAS,
         JONCTION_DROITE, JONCTION_GAUCHE, JONCTION_HAUTE, JONCTION_BASSE,
         COIN_HAUT_GAUCHE, COIN_HAUT_DROIT, COIN_BAS_DROIT, COIN_BAS_GAUCHE,
     VIDE, SPAWN, PASS, INTERDIT
-} Case;
+} Case; // Differents types de case
 
-typedef enum {GAUCHE, DROITE, HAUT, BAS, STATIC} Direction;
+typedef enum {GAUCHE, DROITE, HAUT, BAS, STATIC} Direction; // Differentes directions 
 
 class Jeu;
 
@@ -61,13 +72,13 @@ class Energizer
 class Jeu
 {
   protected:
-    Case *terrain;
+    Case *terrain; // Tableau de case qui contient le terrain 
     int largeur, hauteur; // Nombre de cases en largeur et en hauteur
-    int posPacmanX, posPacmanY;
-	int nbVie, score;
-	int nbDot;
-	int timePower, eatenPower;
-	bool isCerise;
+    int posPacmanX, posPacmanY; // Position pacman
+	int nbVie, score; // Nombre de vie et score
+	int nbDot; // Nombre de pac-gomme
+	int timePower, eatenPower; // Power-up
+	bool isCerise; // Presence du fruit
 	int eatenCerise;
 	bool eatGhost = false;
     std::list<Fantome> fantomes;
@@ -100,16 +111,21 @@ class Jeu
 	// Retourne le score actuel
 	int getScore() const;
 	
+	// Retourne et modifie le meilleur score
 	void setHighscores();
     int getHighscores();
 	
+	// Retourne le nombre de pac-gommes
 	int getNbDot() const;
 	
+	// Retourne le temps du power-up
 	int getPowerTime() const;
 	
+	// Retourne si cerise ou pas et le nb de cerises mangees 
 	bool getCerise() const;
 	int getEatenCerise() const;
 	
+	// Retourne et modifie si pacman vient de manger un fantome
 	bool getEatGhost() const;
 	void setEatGhost(bool);
 
@@ -132,8 +148,10 @@ class Jeu
     // D�place Pacman dans une direction (si la case � atteindre est valide)
     Direction deplacePacman(Direction);
 	
+	// Mort du Pacman
 	void deadPacman();
 	
+	// Collision Pacman/Fantome
 	void collision();	
 };
 
