@@ -13,15 +13,15 @@ class PacmanWindow : public QFrame
   protected:
     Jeu jeu;
     QPixmap pixmapPacman, 
-		pixmapGhostAzure, pixmapGhostPink, pixmapGhostRed, pixmapGhostYellow, pixmapGhostBlue,
+		pixmapGhostAzure, pixmapGhostPink, pixmapGhostRed, pixmapGhostYellow, pixmapGhostBlue, pixmapGhostWhite,
 		pixmapMurVertical, pixmapMurHorizontal,
             pixmapArrondiDroit, pixmapArrondiGauche, pixmapArrondiHaut, pixmapArrondiBas,
             pixmapJonctionDroite, pixmapJonctionGauche, pixmapJonctionHaute, pixmapJonctionBasse,
-			pixmapCoinHautGauche, pixmapCoinHautDroit, pixmapCoinBasDroit, pixmapCoinBasGauche,
+			pixmapCoinHautGauche, pixmapCoinHautDroit, pixmapCoinBasDroit, pixmapCoinBasGauche, pixmapBarreSpawn,
 		pixmapDot, pixmapEnergizer, pixmapVie, pixmapCerise;
 	QTimer *move;
-	QLabel *printHighscores,*printScore, *TagLife, *TagScore, *Cerise;
-	QString score, highscores;
+	QLabel *printHighscores, *printScore, *TagLife, *TagScore, *Cerise, *printCerise;
+	QString score, highscores, cerise;
 	Direction directionPacman = STATIC;
 	bool GameOver;
 	bool doWelcome = true;

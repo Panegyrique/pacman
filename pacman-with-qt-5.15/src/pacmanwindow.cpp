@@ -3,6 +3,8 @@
 #include <thread>
 #include "pacmanwindow.hpp"
 
+#define POWERTIME 8000
+
 using namespace std;
 
 PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pParent, flags)
@@ -58,6 +60,13 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
 	Cerise = new QLabel(this);
 	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-80,8+jeu.getNbCasesY()*hauteurCase,32,32);
 	Cerise->setPixmap(pixmapCerise);
+	
+	printCerise = new QLabel(this);
+	printCerise->setStyleSheet("background-color:black");
+    printCerise->setGeometry(jeu.getNbCasesX()*largeurCase-40,8+jeu.getNbCasesY()*hauteurCase,32,32);
+	cerise = QString("<font color='white'>") + QString::number(jeu.getEatenCerise()) + QString("<\font>");
+    printCerise->setText(cerise);
+    printCerise->setFont(Arcade);
 	
 	// Record
     QRectF target(0, 0, 864, 608);
@@ -143,6 +152,9 @@ void PacmanWindow::paintEvent(QPaintEvent *)
                 case COIN_BAS_GAUCHE:
                     painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinBasGauche);
                     break;
+				case PASS:
+					painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapBarreSpawn);
+					break;
             }
         }
     }
@@ -160,11 +172,13 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 
     // Dessine les fantomes
 	int compteur = 0;
+	static int temps = 0;
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
     for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
 		if(itFantome->getFear() == false)
         {
+			
 			if(compteur >= 4)
 				compteur = 0;
 
@@ -184,12 +198,24 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 					break;
 			}
 		}
-        else painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
+        else
+		{
+			temps++;
+			if(temps%1000<1000/2 && jeu.getPowerTime()<2000)
+				painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostWhite);
+			else
+				painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
+		}
 		compteur++;
 	}
+	
 	// Dessine Pacman
 	painter.drawPixmap(jeu.getPacmanX()*largeurCase, jeu.getPacmanY()*hauteurCase, pixmapPacman);
 
+	// Dessine la cerise
+	if(jeu.getCerise() == true)
+		painter.drawPixmap(13*largeurCase, 11*hauteurCase, pixmapCerise);
+	
 	// Dessine les vies
     for(int i=0;i<jeu.getNbVie();i++)
         painter.drawPixmap(150+i*35, 9+jeu.getNbCasesY()*hauteurCase , pixmapVie);
@@ -203,8 +229,13 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 	else
 	{
 		// Game Over ?
-		if(jeu.getNbVie() <= 0)
+		if(jeu.getNbVie() == 0){
 			winOrGameOver(&painter, GAMEOVER);
+			if(!GameOver){
+				generateSound("./data/sound/death.mp3");
+				GameOver = true;
+			}
+		}
 
 		// Win ?
 		if(jeu.getNbDot() == 0)
@@ -382,25 +413,45 @@ void PacmanWindow::keyPressEvent(QKeyEvent *event)
 
 void PacmanWindow::handleTimer()
 {
+	static int memoireCerise = 0;
     jeu.evolue();
-	if(jeu.getPowerTime() == 7999) generateSound("./data/sound/voila-j-aime-bien.mp3");
+	if(jeu.getPowerTime() == POWERTIME - 1) generateSound("./data/sound/voila-j-aime-bien.mp3");
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
+	cerise = QString("<font color='white'>") + QString::number(jeu.getEatenCerise()) + QString("<\font>");
+    printCerise->setText(cerise);
+	if(jeu.getEatenCerise()>memoireCerise){
+		generateSound("./data/sound/eatfruit.mp3");
+		memoireCerise++;
+	}
+	if(jeu.getEatGhost()){
+		generateSound("./data/sound/eatghost.mp3");
+	    jeu.setEatGhost(false);
+	}
+		
     update();
 }
 
 void PacmanWindow::moveTimer()
 {
-	move->setInterval(10-5/238*(238-jeu.getNbDot()));
+	int vitesseFantome, vitessePacman;
+	if(jeu.getPowerTime() > 0){
+		move->setInterval(10);
+		vitesseFantome = 25; vitessePacman = 16;
+	}
+	else{
+		move->setInterval(7-5/238*(238-jeu.getNbDot()));
+		vitesseFantome = 20; vitessePacman = 20;
+	}
 
     static int temps = 0;
     temps++;
 	
-	if(temps % 25 == 0) 
+	if(temps % vitesseFantome == 0) 
 		jeu.moveGhost();   
-    if (temps % 20 < 10)
+    if (temps % vitessePacman < vitessePacman/2)
         pixmapPacman.load("./data/pacman/pacmanFull.png");
-    else if (temps % 20 == 10)
+    else if (temps % vitessePacman == vitessePacman/2)
     {
 		Direction actualDir = jeu.deplacePacman(directionPacman);
         switch(actualDir)
@@ -447,6 +498,7 @@ void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
     TagLife->hide();
     TagScore->hide();
     Cerise->hide();
+	printCerise->hide();
     jeu.setNbVie(0);
 
     // Image de fond game over
@@ -460,10 +512,6 @@ void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
     }
     else
     {
-		if(!GameOver){
-		generateSound("./data/sound/death.mp3");
-		GameOver = true;
-		}
         imageEnd.load("./data/game_over.png");
     }
     
@@ -552,6 +600,7 @@ void PacmanWindow::clickButtonYes()
     TagLife->show();
     TagScore->show();
     Cerise->show();
+	printCerise->show();
 
 	generateSound("./data/sound/intro.mp3");
     jeu.init();
@@ -570,6 +619,7 @@ void PacmanWindow::welcome(QPainter *painter)
     TagScore->hide();
     Cerise->hide();
     printScore->hide();
+	printCerise->hide();
     jeu.setNbVie(0);
 
     // Image de fond game over
@@ -630,6 +680,7 @@ void PacmanWindow::clickButtonPlayGame()
     TagScore->show();
     Cerise->show();
     printScore->show();
+	printCerise -> show();
     printHighscores->hide();
 
 	generateSound("./data/sound/intro.mp3");
@@ -673,6 +724,12 @@ void PacmanWindow::loadImages()
     if (pixmapGhostBlue.load("./data/ghosts/ghost_blue.png")==false)
     {
         cout<<"Impossible d'ouvrir ghost_blue.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapGhostWhite.load("./data/ghosts/ghost_white.png")==false)
+    {
+        cout<<"Impossible d'ouvrir ghost_white.png"<<endl;
         exit(-1);
     }
 	
@@ -769,6 +826,12 @@ void PacmanWindow::loadImages()
     if (pixmapCoinBasGauche.load("./data/map/coin_bas_gauche.png")==false)
     {
         cout<<"Impossible d'ouvrir coin_bas_gauche.png"<<endl;
+        exit(-1);
+    }
+	
+	if (pixmapBarreSpawn.load("./data/map/barre_spawn.png")==false)
+    {
+        cout<<"Impossible d'ouvrir barre_spawn.png"<<endl;
         exit(-1);
     }
 	

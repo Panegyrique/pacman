@@ -5,6 +5,11 @@
 #include "jeu.hpp"
 #include "pacmanwindow.hpp"
 
+#define Proba_cerise 70000
+#define POWERTIME 8000
+#define POSX_init 13
+#define POSY_init 15
+
 
 using namespace std;
 
@@ -72,59 +77,14 @@ Jeu::Jeu()
     posPacmanX = 0; posPacmanY = 0;
 	nbVie = 0; score = 0;
 	timePower = 0;
-}
-
-Jeu::Jeu(const Jeu &jeu):fantomes(jeu.fantomes), dots(jeu.dots), energizers(jeu.energizers)
-{
-    largeur = jeu.largeur;
-    hauteur = jeu.hauteur;
-    posPacmanX = jeu.posPacmanX;
-    posPacmanY = jeu.posPacmanY;
-	nbVie = jeu.nbVie;
-	score = jeu.score;
-	timePower = jeu.timePower;
-	
-    if (jeu.terrain!=nullptr)
-    {
-        terrain = new Case[largeur*hauteur];
-        for (int c=0; c<largeur*hauteur; c++)
-            terrain[c] = jeu.terrain[c];
-    }
-    else
-        terrain = nullptr;
+	isCerise = false;
+	eatenCerise = 0;
 }
 
 Jeu::~Jeu()
 {
     if (terrain!=nullptr)
         delete[] terrain;
-}
-
-Jeu &Jeu::operator=(const Jeu &jeu)
-{
-    if (terrain!=nullptr)
-        delete[] terrain;
-
-    largeur = jeu.largeur;
-    hauteur = jeu.hauteur;
-    posPacmanX = jeu.posPacmanX;
-    posPacmanY = jeu.posPacmanY;
-	nbVie = jeu.nbVie;
-	score = jeu.score;
-	timePower = jeu.timePower;
-    fantomes = jeu.fantomes;
-	dots = jeu.dots;
-	energizers = jeu.energizers;
-
-    if (jeu.terrain!=nullptr)
-    {
-        terrain = new Case[largeur*hauteur];
-        for (int c=0; c<largeur*hauteur; c++)
-            terrain[c] = jeu.terrain[c];
-    }
-    else
-        terrain = nullptr;
-    return *this;
 }
 
 bool Jeu::init()
@@ -137,10 +97,12 @@ bool Jeu::init()
 	largeur = 27;
 	hauteur = 19;
 	nbVie = 3;
-	score = 0;
+	score = -10;
 	nbDot = 0;
 	timePower = 0;
 	nbDot = 0;
+	isCerise = false;
+	eatenCerise = 0;
 
 	const char terrain_original[19][28] = {
 		"1&&&&&&&&&&&&B&&&&&&&&&&&&2",
@@ -288,13 +250,9 @@ bool Jeu::init()
     }
     while(itDot!=dots.end());
 	
-    do {
-        x = rand()%largeur;
-        y = rand()%hauteur;
-    } while (terrain[y*largeur+x]!=VIDE);
-
-    posPacmanX = x,
-    posPacmanY = y;
+	// Position initiale du Pacman
+    posPacmanX = POSX_init;
+	posPacmanY = POSY_init;
 
     return true;
 }
@@ -306,9 +264,6 @@ void Jeu::evolue()
 		list<Fantome>::iterator itFantome;
 		list<Dot>::iterator itDot;
 		list<Energizer>::iterator itEnergizer;
-
-		int depX[] = {-1, 1, 0, 0};
-		int depY[] = {0, 0, -1, 1};
 		
 		// Gestion des super pac-gommes
 		for (itEnergizer=energizers.begin(); itEnergizer!=energizers.end(); itEnergizer++)
@@ -319,7 +274,7 @@ void Jeu::evolue()
             {
                 score += 50 - 10;
                 energizers.erase(itEnergizer);
-				timePower = 8000; eatenPower = 0; 
+				timePower = POWERTIME; eatenPower = 0; 
 				for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
 					itFantome->fear = true;
 				}
@@ -340,6 +295,11 @@ void Jeu::evolue()
                 break;
             }
         }
+		
+		if(rand()%Proba_cerise==0 && !isCerise){
+			isCerise = true;
+		}
+			
 		collision();
 	}
 }
@@ -469,6 +429,26 @@ int Jeu::getPowerTime() const
 	return timePower;
 }
 
+bool Jeu::getCerise() const
+{ 
+	return isCerise;
+}
+
+int Jeu::getEatenCerise() const
+{
+	return eatenCerise;
+}
+
+bool Jeu::getEatGhost() const
+{
+	return eatGhost;
+}
+	
+void Jeu::setEatGhost(bool setghost)
+{
+	eatGhost = setghost;
+}
+
 Case Jeu::getCase(int x, int y) const
 {
     assert(x>=0 && x<largeur && y>=0 && y<hauteur);
@@ -498,8 +478,8 @@ bool Jeu::posValide(int x, int y) const
 Direction Jeu::deplacePacman(Direction dir)
 {
 	static Direction actualDir;
-    int depX[] = {-1, 1, 0, 0};
-    int depY[] = {0, 0, -1, 1};
+    int depX[] = {-1, 1, 0, 0, 0};
+    int depY[] = {0, 0, -1, 1, 0};
     int testX, testY;
 
     testX = posPacmanX + depX[dir];
@@ -538,8 +518,8 @@ Direction Jeu::deplacePacman(Direction dir)
 void Jeu::deadPacman()
 {
 	nbVie -= 1;
-	posPacmanX = 13;
-	posPacmanY = 11; 
+	posPacmanX = POSX_init;
+	posPacmanY = POSY_init; 
 	
 	list<Fantome>::iterator itFantome;
     for(itFantome = fantomes.begin(); itFantome != fantomes.end(); itFantome++) 
@@ -556,6 +536,7 @@ void Jeu::collision()
 			if(timePower>0 && itFantome->fear == true){
 				eatenPower++;
 				score += 100*pow(2,eatenPower);
+				eatGhost = true;
 				itFantome->posX = 12;
 				itFantome->posY = 9;
 				itFantome->pass = false;
@@ -566,6 +547,12 @@ void Jeu::collision()
 				deadPacman();
 		}
     }
+	
+	if(isCerise && posPacmanX == 13 && posPacmanY == 11){
+		isCerise = false;
+		eatenCerise++;
+		score += 100;
+	}
 	
 	if(timePower > 0) // Timer de 10 secondes
 		timePower -= 1;

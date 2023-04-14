@@ -67,6 +67,9 @@ class Jeu
 	int nbVie, score;
 	int nbDot;
 	int timePower, eatenPower;
+	bool isCerise;
+	int eatenCerise;
+	bool eatGhost = false;
     std::list<Fantome> fantomes;
 	std::list<Dot> dots;
 	std::list<Energizer> energizers;
@@ -103,6 +106,12 @@ class Jeu
 	int getNbDot() const;
 	
 	int getPowerTime() const;
+	
+	bool getCerise() const;
+	int getEatenCerise() const;
+	
+	bool getEatGhost() const;
+	void setEatGhost(bool);
 
     // Retourne la case � une position donn�e
     Case getCase(int, int) const;
