@@ -143,6 +143,9 @@ void PacmanWindow::paintEvent(QPaintEvent *)
                 case COIN_BAS_GAUCHE:
                     painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapCoinBasGauche);
                     break;
+                case PASS:
+                    painter.drawPixmap(x*largeurCase, y*hauteurCase, pixmapBarreSpawn);
+                    break;
             }
         }
     }
@@ -208,6 +211,25 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     // Menu Init ?
     if(doWelcome == true)
         welcome(&painter);
+<<<<<<< Updated upstream
+=======
+	else
+	{
+		// Game Over ?
+		if(jeu.getNbVie() <= 0)
+			winOrGameOver(&painter, GAMEOVER);
+
+		// Win ?
+		if(jeu.getNbDot() == 0)
+			winOrGameOver(&painter, WIN);
+
+        // Dot mangé ?
+        // if(jeu.getEatDot() == 1)
+        //     generateSound("./data/sound/pacman_chomp.mp3");
+	}
+
+    
+>>>>>>> Stashed changes
 }
 
 void PacmanWindow::directionGhosts()
@@ -568,8 +590,8 @@ void PacmanWindow::clickButtonYes()
     TagLife->show();
     TagScore->show();
     Cerise->show();
-
-	generateSound("./data/sound/intro.mp3");
+    
+    generateSound("./data/sound/intro.mp3")
     jeu.init();
     update();
 }
@@ -797,6 +819,12 @@ void PacmanWindow::loadImages()
 	if (pixmapCerise.load("./data/cerise.png")==false)
     {
         cout<<"Impossible d'ouvrir cerise.png"<<endl;
+        exit(-1);
+    }
+
+    if (pixmapBarreSpawn.load("./data/map/barre_spawn.png")==false)
+    {
+        cout<<"Impossible d'ouvrir barre_spawn.png"<<endl;
         exit(-1);
     }
 }

@@ -14,7 +14,7 @@ class PacmanWindow : public QFrame
     Jeu jeu;
     QPixmap pixmapPacman, 
 		pixmapGhostAzure, pixmapGhostPink, pixmapGhostRed, pixmapGhostYellow, pixmapGhostBlue,
-		pixmapMurVertical, pixmapMurHorizontal,
+		pixmapMurVertical, pixmapMurHorizontal, pixmapBarreSpawn,
             pixmapArrondiDroit, pixmapArrondiGauche, pixmapArrondiHaut, pixmapArrondiBas,
             pixmapJonctionDroite, pixmapJonctionGauche, pixmapJonctionHaute, pixmapJonctionBasse,
 			pixmapCoinHautGauche, pixmapCoinHautDroit, pixmapCoinBasDroit, pixmapCoinBasGauche,
