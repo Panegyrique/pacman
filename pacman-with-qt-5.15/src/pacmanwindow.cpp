@@ -3,53 +3,61 @@
 #include <thread>
 #include "pacmanwindow.hpp"
 
-#define POWERTIME 8000
-
 using namespace std;
 
+// Constructeur de notre class PacmanWindow
 PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pParent, flags)
 {
     // Chargement des images
     loadImages();
 
-    // Taille des cases en pixels
+    // Largeur et hauteur de case
     int largeurCase, hauteurCase;
-	int decalage = 50;
+    largeurCase = pixmapMurVertical.width();
+    hauteurCase = pixmapMurVertical.height();
 	
     // Initialisation du jeu
     jeu.init();
 	GameOver = false;
 
+    // Initialisation du timer gerant le rafraichissement de la fenetre
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &PacmanWindow::handleTimer);
     timer->start(0.1);
 	
+    // Initialisation du timer propre au deplacement des entites 
 	move = new QTimer(this);
     connect(move, &QTimer::timeout, this, &PacmanWindow::moveTimer);
 	move->start(10);
 
-    largeurCase = pixmapMurVertical.width();
-    hauteurCase = pixmapMurVertical.height();
-
-    resize(jeu.getNbCasesX()*largeurCase, decalage + jeu.getNbCasesY()*hauteurCase);
+    // Redimensionnement de la fenetre au dimension de notre carte de jeu
+    resize(jeu.getNbCasesX()*largeurCase, DECALAGE_Y_BANNIERE + jeu.getNbCasesY()*hauteurCase);
 	
+    
+    // Initialisation d'un police d'ecriture dansle style retro
 	QFontDatabase *MyFontDatabase = new QFontDatabase();
 	MyFontDatabase->addApplicationFont("./data/arcadepi.ttf");
 	QFont Arcade("arcadepix", 20, 1);
-	QFont ArcadeHighscores("arcadepix", 26);
+
+    // Creation d'un autre QFont de la meme police mais de taille plus importante (utilite pour l'affichage du highscores)
+	QFont ArcadeHighscores("arcadepix", 26); 
 	
+    // Initialisation de tout les labels et string qui permettent de comprendre l'avancement du jeu
+    // Label LIFES
 	TagLife = new QLabel(this);
     TagLife->setStyleSheet("background-color:black");
     TagLife->setGeometry(10,8+jeu.getNbCasesY()*hauteurCase,140,40);
     TagLife->setText("<font color='white'>LIFES<\font>");
     TagLife->setFont(Arcade);
 	
+    // Label SCORE
 	TagScore = new QLabel(this);
     TagScore->setStyleSheet("background-color:black");
     TagScore->setGeometry(360,8+jeu.getNbCasesY()*hauteurCase,140,40);
     TagScore->setText("<font color='white'>SCORE<\font>");
     TagScore->setFont(Arcade);
 	
+    // Label du score reel (un nombre)
 	printScore = new QLabel(this);
     printScore->setStyleSheet("background-color:black");
     printScore->setGeometry(500,8+jeu.getNbCasesY()*hauteurCase,170,40);
@@ -57,28 +65,31 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     printScore->setText(score);
     printScore->setFont(Arcade);
 	
+    // Label de la cerise (dessin plus parlant qu'un texte)
 	Cerise = new QLabel(this);
-	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-80,8+jeu.getNbCasesY()*hauteurCase,32,32);
+	Cerise->setGeometry(jeu.getNbCasesX()*largeurCase-80,8+jeu.getNbCasesY()*hauteurCase,PIXELS,PIXELS);
 	Cerise->setPixmap(pixmapCerise);
 	
+    // Label du nombre de cerise mangee
 	printCerise = new QLabel(this);
 	printCerise->setStyleSheet("background-color:black");
-    printCerise->setGeometry(jeu.getNbCasesX()*largeurCase-40,8+jeu.getNbCasesY()*hauteurCase,32,32);
+    printCerise->setGeometry(jeu.getNbCasesX()*largeurCase-40,8+jeu.getNbCasesY()*hauteurCase,PIXELS,PIXELS);
 	cerise = QString("<font color='white'>") + QString::number(jeu.getEatenCerise()) + QString("<\font>");
     printCerise->setText(cerise);
     printCerise->setFont(Arcade);
 	
-	// Record
-    QRectF target(0, 0, 864, 608);
+	// Creation de variables afin de centrer le label du highscores au centre de la fenetre
+    QRectF target(0, 0, 864, 608); // Target de la dimension de notre fenetre
     int highscoresWidth = 170;
     int highscoresHeight = 40;
     int highscoresX;
-    if(jeu.getHighscores() >= 1000)
+    if(jeu.getHighscores() >= 1000) // Condition pour centrer correctement le highscore en fonction du nombre de chiffre
         highscoresX = (target.width() - highscoresWidth) / 2 + 20;
     else
         highscoresX = (target.width() - highscoresWidth) / 2 + 40;
     int highscoresY = (3.6 * target.height() / 4) - (highscoresHeight / 2);
 
+    // Label du highscores (un nombre)
     printHighscores = new QLabel(this);
     printHighscores->setStyleSheet("background-color:black");
     printHighscores->setGeometry(highscoresX, highscoresY, highscoresWidth, highscoresHeight);
@@ -87,23 +98,24 @@ PacmanWindow::PacmanWindow(QWidget *pParent, Qt::WindowFlags flags):QFrame(pPare
     printHighscores->setFont(ArcadeHighscores);
 }
 
+// Methode permettant de gerer le changement de l'affichage
 void PacmanWindow::paintEvent(QPaintEvent *)
 {
+    // Objet QPainter permettant de dessiner dans la fenetre
     QPainter painter(this);
 	
-	//Fond du jeu en noir
-    painter.fillRect(0, 0, 27*32, 19*32+50, Qt::black);
+	//Fond du jeu en noir (car utilisation d'image avec fond transparent)
+    painter.fillRect(0, 0, 27*PIXELS, 19*PIXELS+50, Qt::black);
     painter.beginNativePainting();
     
-    int x, y;
-
-    // Taille des cases en pixels
+    
+    // Largeur et hauteur de case
     int largeurCase, hauteurCase;
-
     largeurCase = pixmapMurVertical.width();
     hauteurCase = pixmapMurVertical.height();
 
     // Dessine les cases
+    int x, y;
     for (y=0;y<jeu.getNbCasesY();y++)
     {
         for (x=0;x<jeu.getNbCasesX();x++)
@@ -158,6 +170,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
             }
         }
     }
+
 	// Dessine les pac-gommes
     const list<Dot> &dots = jeu.getDots();
     list<Dot>::const_iterator itDot;
@@ -176,37 +189,39 @@ void PacmanWindow::paintEvent(QPaintEvent *)
     const list<Fantome> &fantomes = jeu.getFantomes();
     list<Fantome>::const_iterator itFantome;
     for (itFantome=fantomes.begin(); itFantome!=fantomes.end(); itFantome++){
-		if(itFantome->getFear() == false)
+		if(itFantome->getFear() == false) // Condition pour differencier l'etat mangeable ou non des fantomes
         {
-			
+            // Compteur permettant de boucler dans un ordre precis la creation des fantomes par couleur
 			if(compteur >= 4)
 				compteur = 0;
 
 			switch(compteur)
 			{
-				case 0:
+				case 0: // 0 correspond a Azure
 					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostAzure);
 					break;
-				case 1:
+				case 1: // 1 correspond a Rose
 					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostPink);
 					break;
-				case 2:
+				case 2: // 2 correspond a Rouge
 					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostRed);
 					break;
-				case 3:
+				case 3: // 3 correspond a Jaune
 					painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostYellow);
 					break;
 			}
 		}
-        else
+        else // Fantomes mangeable par le pacman
 		{
 			temps++;
+            // A la fin de la duree de l'etat mangeable implementation d'une condition permettant le cignotement des fantomes
+            // Alternance entre bleu et blanc
 			if(temps%1000<1000/2 && jeu.getPowerTime()<2000)
 				painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostWhite);
 			else
 				painter.drawPixmap(itFantome->getPosX()*largeurCase, itFantome->getPosY()*hauteurCase, pixmapGhostBlue);
 		}
-		compteur++;
+		compteur++; // Incrementation du compteur pour passer a la couleur de fantome suivante
 	}
 	
 	// Dessine Pacman
@@ -214,7 +229,7 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 
 	// Dessine la cerise
 	if(jeu.getCerise() == true)
-		painter.drawPixmap(13*largeurCase, 11*hauteurCase, pixmapCerise);
+		painter.drawPixmap(POSX_FRUIT*largeurCase, POSY_FRUIT*hauteurCase, pixmapCerise);
 	
 	// Dessine les vies
     for(int i=0;i<jeu.getNbVie();i++)
@@ -229,20 +244,46 @@ void PacmanWindow::paintEvent(QPaintEvent *)
 	else
 	{
 		// Game Over ?
-		if(jeu.getNbVie() == 0){
+		if(jeu.getNbVie() == 0 && YouWin == false)
+        {
 			winOrGameOver(&painter, GAMEOVER);
-			if(!GameOver){
-				generateSound("./data/sound/death.mp3");
+			if(!GameOver)
+            {
+				generateSound("./data/sound/death.mp3"); // Lancement du son correspondant à une fin de partie
 				GameOver = true;
 			}
 		}
 
-		// Win ?
-		if(jeu.getNbDot() == 0)
+		// You Win ?
+		if(jeu.getNbDot() == 0 && GameOver == false) // Partie gagne quand tout les dots sont manges
+        {
 			winOrGameOver(&painter, WIN);
+            if(!YouWin)
+            {
+				generateSound("./data/sound/youwin.mp3"); // Lancement du son correspondant à une fin de partie
+				YouWin = true;
+			}
+        }
 	}
 }
 
+
+// Gestion de la direction du pacman au travers du clavier
+void PacmanWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key()==Qt::Key_Left)
+        directionPacman = GAUCHE;
+    else if (event->key()==Qt::Key_Right)
+        directionPacman = DROITE;
+    else if (event->key()==Qt::Key_Up)
+        directionPacman = HAUT;
+    else if (event->key()==Qt::Key_Down)
+        directionPacman = BAS;
+    update();
+}
+
+
+// Gestion de la direction des yeux en fonction de leur direction de deplacement
 void PacmanWindow::directionGhosts()
 {
     const list<Fantome> &fantomes = jeu.getFantomes();
@@ -253,7 +294,7 @@ void PacmanWindow::directionGhosts()
     {
 		if(itFantome->getFear() == false)
         {
-			if(compteur >= 4)
+			if(compteur >= 4) // Meme principe que precedement pour respecter l'ordre des couleurs
 				compteur = 0;
 
             Direction dirGhost = itFantome->getDirection();
@@ -393,37 +434,37 @@ void PacmanWindow::directionGhosts()
                     }
 					break;
 			}
-			compteur++;
+			compteur++; // Incrementation du compteur pour passer a la couleur de fantome suivante
 		}
     }
 }
 
-void PacmanWindow::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key()==Qt::Key_Left)
-        directionPacman = GAUCHE;
-    else if (event->key()==Qt::Key_Right)
-        directionPacman = DROITE;
-    else if (event->key()==Qt::Key_Up)
-        directionPacman = HAUT;
-    else if (event->key()==Qt::Key_Down)
-        directionPacman = BAS;
-    update();
-}
 
+// Timer gerant le rafraichissement de la fenetre 
 void PacmanWindow::handleTimer()
 {
-	static int memoireCerise = 0;
+	static int memoireCerise = 0; // Servira de compteur pour ne pas repeter le son en boucle
     jeu.evolue();
-	if(jeu.getPowerTime() == POWERTIME - 1) generateSound("./data/sound/voila-j-aime-bien.mp3");
+
+    // Mise a jour du score global
 	score = QString("<font color='yellow'>") + QString::number(jeu.getScore()) + QString("<\font>");
     printScore->setText(score);
+
+    // Mise a jour du nombre de cerise mangee
 	cerise = QString("<font color='white'>") + QString::number(jeu.getEatenCerise()) + QString("<\font>");
     printCerise->setText(cerise);
+
+    // Lancement d'un son quand un super pac-gomme est mange
+	if(jeu.getPowerTime() == POWERTIME - 1) 
+        generateSound("./data/sound/voila-j-aime-bien.mp3");
+
+    // Lancement d'un son quand une cerise est mangee
 	if(jeu.getEatenCerise()>memoireCerise){
 		generateSound("./data/sound/eatfruit.mp3");
 		memoireCerise++;
 	}
+
+    // Lancement d'un son quand un fantome est mangee
 	if(jeu.getEatGhost()){
 		generateSound("./data/sound/eatghost.mp3");
 	    jeu.setEatGhost(false);
@@ -432,14 +473,18 @@ void PacmanWindow::handleTimer()
     update();
 }
 
+
+// Timer propre au deplacement des entites
 void PacmanWindow::moveTimer()
 {
 	int vitesseFantome, vitessePacman;
-	if(jeu.getPowerTime() > 0){
+	if(jeu.getPowerTime() > 0) // Definition d'un vitesse par defaut pour les fantomes et le pacman quand un super pac gomme est mange
+    {
 		move->setInterval(10);
 		vitesseFantome = 25; vitessePacman = 16;
 	}
-	else{
+	else // Sinon vitesse evolutive en fonction de l'avancement dans le jeu (nombre de dot mange)
+    {
 		move->setInterval(7-5/238*(238-jeu.getNbDot()));
 		vitesseFantome = 20; vitessePacman = 20;
 	}
@@ -447,13 +492,13 @@ void PacmanWindow::moveTimer()
     static int temps = 0;
     temps++;
 	
-	if(temps % vitesseFantome == 0) 
+	if(temps % vitesseFantome == 0) // Permet de dissocier la vitesse du pacman et des fantomes
 		jeu.moveGhost();   
-    if (temps % vitessePacman < vitessePacman/2)
+    if (temps % vitessePacman < vitessePacman/2) // Permet d'alterner entre pacman plein et un pacman ouvert donne illusion de manger
         pixmapPacman.load("./data/pacman/pacmanFull.png");
     else if (temps % vitessePacman == vitessePacman/2)
     {
-		Direction actualDir = jeu.deplacePacman(directionPacman);
+		Direction actualDir = jeu.deplacePacman(directionPacman); // Recuperation du deplacment pour alterner dans le bon sens
         switch(actualDir)
         {
             case GAUCHE:
@@ -489,132 +534,41 @@ void PacmanWindow::moveTimer()
     update();
 }
 
-void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
-{	
-    // Ajout du nouveau record si record
-    jeu.setHighscores();
 
-    // Suppression texte
-    TagLife->hide();
-    TagScore->hide();
-    Cerise->hide();
-	printCerise->hide();
-    jeu.setNbVie(0);
-
-    // Image de fond game over
-    QRectF target(0, 0, 864, 608); // 27*32 & 19*32
-    QRectF source(0, 0, 864, 608);
-    QImage imageEnd;
-
-    if(end == WIN)
+// Permet de lancer et de jouer un son
+void PacmanWindow::generateSound(const char* filename) 
+{
+	SoundGenerator sg;
+    FMOD_SOUND *sound = nullptr;
+    sg.result = FMOD_System_CreateSound(sg.system, filename, FMOD_DEFAULT, 0, &sound);
+	if (sg.result != FMOD_OK) 
     {
-        imageEnd.load("./data/you_win.png");
+        // Affiche une erreur si le fichier audio n'a pas pu être chargee
+        cout<<"Impossible de charger le fichier audio : "<<FMOD_ErrorString(sg.result)<<endl;
+        return;
     }
-    else
+
+    FMOD_CHANNEL *channel = nullptr;
+    sg.result = FMOD_System_PlaySound(sg.system, sound, sg.channelgroup, 0, &channel);
+	if (sg.result != FMOD_OK) 
     {
-        imageEnd.load("./data/game_over.png");
+        // Affiche une erreur si le son n'a pas pu être jouee
+        cout<<"Impossible de jouer le son : "<<FMOD_ErrorString(sg.result)<<endl;
+        return;
     }
-    
-    painter->drawImage(target, imageEnd, source);
 
-    // Bouger score
-    QFont font("arcadepix", 32);
-    int printScoreWidth = 170;
-    int printScoreHeight = 40;
-    int printScoreX;
-    if(jeu.getScore() >= 1000)
-        printScoreX = (target.width() - printScoreWidth) / 2 - 10;
-    else
-        printScoreX = (target.width() - printScoreWidth) / 2 + 10;
-    int printScoreY = (target.height() - printScoreHeight) / 2 + 15;
-    printScore->move(printScoreX, printScoreY);
-    printScore->setFont(font);
+    // Lancement d'un thread permettant de continuer le programme le son se lance et le programme continu
+    std::thread musicThread(&FMOD_Channel_SetPaused, channel, false);
 
-    // Création de bouton Yes et No
-    createButtonYesNo(painter, &target);
-
-    // Update
-    update();
+    // A la fin du son on arrete le thread
+    musicThread.detach();
 }
 
-void PacmanWindow::createButtonYesNo(QPainter *painter, QRectF *target)
-{
-	// Ajout du premier bouton
-    int buttonWidth = 150;
-    int buttonHeight = 60;
-    int buttonYesX = (target->width() - buttonWidth) / 2 - 100;
-    int buttonYesY = (3.3 * target->height() / 4) - (buttonHeight / 2);
-    QRect buttonYesRect(buttonYesX, buttonYesY, buttonWidth, buttonHeight);
-    // Ajout du deuxième bouton
-    int buttonNoX = (target->width() - buttonWidth) / 2 + 100;
-    int buttonNoY = (3.3 * target->height() / 4) - (buttonHeight / 2);
-    QRect buttonNoRect(buttonNoX, buttonNoY, buttonWidth, buttonHeight);
 
-    // Style du premier bouton
-    QBrush brushYes(QColor(0, 0, 0));
-    QPen penYes(Qt::NoPen);
-    QFont font("arcadepix", 16);
-    painter->setBrush(brushYes);
-    painter->setPen(penYes);
-    painter->setFont(font);
-    painter->drawRoundedRect(buttonYesRect, 5, 5);
-    painter->setPen(QColor(255, 255, 0));
-    painter->drawText(buttonYesRect, Qt::AlignCenter, "Yes");
-    // Style du deuxième bouton
-    QBrush brushNo(QColor(0, 0, 0));
-    QPen penNo(Qt::NoPen);
-    painter->setBrush(brushNo);
-    painter->setPen(penNo);
-    painter->setFont(font);
-    painter->drawRoundedRect(buttonNoRect, 5, 5);
-    painter->setPen(QColor(255, 255, 0));
-    painter->drawText(buttonNoRect, Qt::AlignCenter, "No");
-
-    // Assimilation du bouton visuel crée à un vrai bouton
-    PacmanButton *buttonYes = new PacmanButton(this);
-    buttonYes->setGeometry(buttonYesRect);
-    buttonYes->setFlat(true);
-    buttonYes->setCursor(Qt::PointingHandCursor);
-    buttonYes->show();
-    // Assimilation du deuxième bouton visuel créé à un vrai bouton
-    PacmanButton *buttonNo = new PacmanButton(this);
-    buttonNo->setGeometry(buttonNoRect);
-    buttonNo->setFlat(true);
-    buttonNo->setCursor(Qt::PointingHandCursor);
-    buttonNo->show();
-
-    // Connexion du premier bouton à une fonction
-    connect(buttonYes, &QPushButton::clicked, this, &PacmanWindow::clickButtonYes);
-    // Connexion du deuxième bouton à une fonction
-    connect(buttonNo, &QPushButton::clicked, this, &PacmanWindow::clickButtonNo);
-}
-
-void PacmanWindow::clickButtonYes()
-{
-    QFont Arcade("arcadepix", 20, 1);
-    int printScoreX = 500;
-    int printScoreY = 8 + jeu.getNbCasesY() * pixmapMurVertical.height();
-    printScore->move(printScoreX, printScoreY);
-    printScore->setFont(Arcade);
-
-    TagLife->show();
-    TagScore->show();
-    Cerise->show();
-	printCerise->show();
-
-	generateSound("./data/sound/intro.mp3");
-    jeu.init();
-    update();
-}
-
-void PacmanWindow::clickButtonNo()
-{
-	exit(-1);
-}
-
+// Permet d'afficher le menu d'accueil
 void PacmanWindow::welcome(QPainter *painter)
 {
-    // Suppression texte
+    // Suppression des labels et strings inutile
     TagLife->hide();
     TagScore->hide();
     Cerise->hide();
@@ -622,29 +576,31 @@ void PacmanWindow::welcome(QPainter *painter)
 	printCerise->hide();
     jeu.setNbVie(0);
 
-    // Image de fond game over
-    QRectF target(0, 0, 864, 608); // 27*32 & 19*32
+    // Affiche de l'image d'accueil
+    QRectF target(0, 0, 864, 608);
     QRectF source(0, 0, 864, 608);
     QImage imageWelcome("./data/play_game.png");
     painter->drawImage(target, imageWelcome, source);
 
-    // Création du bouton play game
+    // Creeation du bouton Play Game
     createButtonPlayGame(painter, &target);
 
     // Update
     update();
 }
 
+
+// Permet la creation d'un bouton Play Game
 void PacmanWindow::createButtonPlayGame(QPainter *painter, QRectF *target)
 {
-    // Ajout du bouton
+    // Creation d'un rectangle qui sera plus tard le bouton
     int buttonWidth = 260;
     int buttonHeight = 80;
     int buttonPlayGameX = (target->width() - buttonWidth) / 2;
     int buttonPlayGameY = (2.8* target->height() / 4) - (buttonHeight / 2);
     QRect buttonPlayGameRect(buttonPlayGameX, buttonPlayGameY, buttonWidth, buttonHeight);
 
-    // Style du bouton
+    // Ajout de design et de texte au rectangle
     QBrush brushPlayGame(QColor(0, 0, 0));
     QPen penPlayGame(Qt::NoPen);
     QFont font("arcadepix", 22);
@@ -655,37 +611,186 @@ void PacmanWindow::createButtonPlayGame(QPainter *painter, QRectF *target)
     painter->setPen(QColor(255, 255, 255));
     painter->drawText(buttonPlayGameRect, Qt::AlignCenter, "Play Game");
 
-    // Assimilation du bouton visuel crée à un vrai bouton
+    // Assimilation du rectangle creee a un vrai bouton
     PacmanButton *buttonPlayGame = new PacmanButton(this);
     buttonPlayGame->setGeometry(buttonPlayGameRect);
     buttonPlayGame->setFlat(true);
     buttonPlayGame->setCursor(Qt::PointingHandCursor);
     buttonPlayGame->show();
 
-    // Connexion du premier bouton à une fonction
+    // Connexion du bouton a une fonction
     connect(buttonPlayGame, &QPushButton::clicked, this, &PacmanWindow::clickButtonPlayGame);
 }
 
+
+// Permet de lancer le jeu
 void PacmanWindow::clickButtonPlayGame()
 {
+    // On ne souhaite plus afficher le menu d'accueil pour la suite
     doWelcome = false;
 
+    // Re situe le score au bon endroit
     QFont Arcade("arcadepix", 20, 1);
     int printScoreX = 500;
     int printScoreY = 8 + jeu.getNbCasesY() * pixmapMurVertical.height();
     printScore->move(printScoreX, printScoreY);
     printScore->setFont(Arcade);
 
+    // Affichage des label et string utile pour le suivie du jeu
     TagLife->show();
     TagScore->show();
     Cerise->show();
     printScore->show();
 	printCerise -> show();
+
+    // On cache l'affichage du highscore
     printHighscores->hide();
 
+    // Lancement du son d'intro de pacman au lancement du jeu
 	generateSound("./data/sound/intro.mp3");
+
+    // Initialisation du jeu
     jeu.init();
     update();
+}
+
+
+// Permet d'afficher l'image Game Over ou You Win en fonction du parametre reçu
+void PacmanWindow::winOrGameOver(QPainter *painter, endGame end)
+{	
+    // Mise a jour du nouveau record si record
+    jeu.setHighscores();
+
+    // Suppression des labels et strings inutile 
+    TagLife->hide();
+    TagScore->hide();
+    Cerise->hide();
+	printCerise->hide();
+    jeu.setNbVie(0);
+
+    // Image de l'image de fond
+    QRectF target(0, 0, 864, 608);
+    QRectF source(0, 0, 864, 608);
+    QImage imageEnd;
+
+    if(end == WIN) // Si victoire on charge l'image You Win
+    {
+        imageEnd.load("./data/you_win.png");
+    }
+    else // Sinon Game Over
+    {
+        imageEnd.load("./data/game_over.png");
+    }
+
+    // Affichage de l'image chargee
+    painter->drawImage(target, imageEnd, source);
+
+    // Deplacement du score pour le centrer
+    QFont font("arcadepix", PIXELS);
+    int printScoreWidth = 170;
+    int printScoreHeight = 40;
+    int printScoreX;
+    if(jeu.getScore() >= 1000) // Condition pour centrer correctement le score en fonction du nombre de chiffre
+        printScoreX = (target.width() - printScoreWidth) / 2 - 10;
+    else
+        printScoreX = (target.width() - printScoreWidth) / 2 + 10;
+    int printScoreY = (target.height() - printScoreHeight) / 2 + 15;
+    printScore->move(printScoreX, printScoreY);
+    printScore->setFont(font);
+
+    // Creeation de bouton Yes et No
+    createButtonYesNo(painter, &target);
+
+    // Update
+    update();
+}
+
+
+// Permet la creation d'un bouton Yes et d'un bouton No
+void PacmanWindow::createButtonYesNo(QPainter *painter, QRectF *target)
+{
+	// Creation d'un rectangle qui sera plus tard le premier bouton
+    int buttonWidth = 150;
+    int buttonHeight = 60;
+    int buttonYesX = (target->width() - buttonWidth) / 2 - 100;
+    int buttonYesY = (3.3 * target->height() / 4) - (buttonHeight / 2);
+    QRect buttonYesRect(buttonYesX, buttonYesY, buttonWidth, buttonHeight);
+    // Creation d'un rectangle qui sera plus tard le deuxieme bouton
+    int buttonNoX = (target->width() - buttonWidth) / 2 + 100;
+    int buttonNoY = (3.3 * target->height() / 4) - (buttonHeight / 2);
+    QRect buttonNoRect(buttonNoX, buttonNoY, buttonWidth, buttonHeight);
+
+    // Ajout de design et de texte au premier rectangle
+    QBrush brushYes(QColor(0, 0, 0));
+    QPen penYes(Qt::NoPen);
+    QFont font("arcadepix", 16);
+    painter->setBrush(brushYes);
+    painter->setPen(penYes);
+    painter->setFont(font);
+    painter->drawRoundedRect(buttonYesRect, 5, 5);
+    painter->setPen(QColor(255, 255, 0));
+    painter->drawText(buttonYesRect, Qt::AlignCenter, "Yes");
+    // Ajout de design et de texte au deuxieme rectangle
+    QBrush brushNo(QColor(0, 0, 0));
+    QPen penNo(Qt::NoPen);
+    painter->setBrush(brushNo);
+    painter->setPen(penNo);
+    painter->setFont(font);
+    painter->drawRoundedRect(buttonNoRect, 5, 5);
+    painter->setPen(QColor(255, 255, 0));
+    painter->drawText(buttonNoRect, Qt::AlignCenter, "No");
+
+    // Assimilation du premier rectangle cree a un vrai bouton
+    PacmanButton *buttonYes = new PacmanButton(this);
+    buttonYes->setGeometry(buttonYesRect);
+    buttonYes->setFlat(true);
+    buttonYes->setCursor(Qt::PointingHandCursor);
+    buttonYes->show();
+    // Assimilation du deuxieme rectangle cree a un vrai bouton
+    PacmanButton *buttonNo = new PacmanButton(this);
+    buttonNo->setGeometry(buttonNoRect);
+    buttonNo->setFlat(true);
+    buttonNo->setCursor(Qt::PointingHandCursor);
+    buttonNo->show();
+
+    // Connexion du premier bouton a une fonction
+    connect(buttonYes, &QPushButton::clicked, this, &PacmanWindow::clickButtonYes);
+    // Connexion du deuxieme bouton a une fonction
+    connect(buttonNo, &QPushButton::clicked, this, &PacmanWindow::clickButtonNo);
+}
+
+
+// Permet de relancer le jeu
+void PacmanWindow::clickButtonYes()
+{
+    // Re situe le score au bon endroit
+    QFont Arcade("arcadepix", 20, 1);
+    int printScoreX = 500;
+    int printScoreY = 8 + jeu.getNbCasesY() * pixmapMurVertical.height();
+    printScore->move(printScoreX, printScoreY);
+    printScore->setFont(Arcade);
+
+    // Affichage des label et string utile pour le suivie du jeu
+    TagLife->show();
+    TagScore->show();
+    Cerise->show();
+	printCerise->show();
+
+    // Lancement du son d'intro de pacman au lancement du jeu
+	generateSound("./data/sound/intro.mp3");
+
+    // Initialisation du jeu
+    YouWin = false;
+    GameOver = false;
+    jeu.init();
+    update();
+}
+
+
+// Permet de quitter le jeu
+void PacmanWindow::clickButtonNo()
+{
+	exit(-1);
 }
 
 
@@ -848,36 +953,15 @@ void PacmanWindow::loadImages()
     }
 }
 
+// Constructeur de la class PacmanButton
 PacmanButton::PacmanButton(QWidget *pParent): QPushButton(pParent)
 {
 	
 }
 
+// Permet de ne pas interferer avec le KeyPressEvent du deplacment du pacman
 void PacmanButton::keyPressEvent(QKeyEvent *e)
 {
 	if (parent() != nullptr)
 		QCoreApplication::sendEvent(parent(), e);
-}
-
-void PacmanWindow::generateSound(const char* filename) {
-	SoundGenerator sg;
-    FMOD_SOUND *sound = nullptr;
-	cout<<"BOUUM"<<endl;
-    sg.result = FMOD_System_CreateSound(sg.system, filename, FMOD_DEFAULT, 0, &sound);
-	if (sg.result != FMOD_OK) {
-        // Affiche une erreur si le fichier audio n'a pas pu être chargé
-        cout<<"Impossible de charger le fichier audio : "<<FMOD_ErrorString(sg.result)<<endl;
-        return;
-    }
-
-    FMOD_CHANNEL *channel = nullptr;
-    sg.result = FMOD_System_PlaySound(sg.system, sound, sg.channelgroup, 0, &channel);
-	if (sg.result != FMOD_OK) {
-        // Affiche une erreur si le son n'a pas pu être joué
-        cout<<"Impossible de jouer le son : "<<FMOD_ErrorString(sg.result)<<endl;
-        return;
-    }
-
-    std::thread musicThread(&FMOD_Channel_SetPaused, channel, false);
-    musicThread.detach();
 }
